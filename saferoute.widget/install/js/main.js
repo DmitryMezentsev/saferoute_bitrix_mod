@@ -1,9 +1,9 @@
 $(function () {
-	if(DDELIVERY_WIDGET === false)
-		return console.error('DDelivery: Не задан API-ключ.');
+	if(SAFEROUTE_WIDGET === false)
+		return console.error('SafeRoute: Не задан API-ключ.');
 	
 	var lang = (function () {
-		switch (DDELIVERY_WIDGET.LANG) {
+		switch (SAFEROUTE_WIDGET.LANG) {
 			case 'ru': return {
 				selectDelivery: 'Выбрать способ доставки',
 				changeDelivery: 'Изменить способ доставки',
@@ -36,7 +36,7 @@ $(function () {
 	
 	
 	function sessionRequest (data) {
-		$.post(DDELIVERY_WIDGET.SESSION_SCRIPT, data, function () {
+		$.post(SAFEROUTE_WIDGET.SESSION_SCRIPT, data, function () {
 			// Обновление блоков на странице
 			BX.Sale.OrderAjaxComponent.sendRequest();
 		});
@@ -45,16 +45,16 @@ $(function () {
 	
 	// Попап для виджета
 	$('body').append(
-		'<div id="dd-widget-wrap">' +
-			'<div id="dd-widget-close">x</div>' +
-			'<div id="dd-widget"></div>' +
+		'<div id="sr-widget-wrap">' +
+			'<div id="sr-widget-close">x</div>' +
+			'<div id="sr-widget"></div>' +
 		'</div>'
 	);
 	
 	
 	// Проверка, что открыта страница оформления заказа
 	if ($('#bx-soa-order').length) {
-		// Сброс текущей выбранной доставки DDelivery
+		// Сброс текущей выбранной доставки SafeRoute
 		sessionRequest({ action: 'reset_delivery' });
 	}
 	
@@ -63,21 +63,21 @@ $(function () {
 	var selectedDelivery;
 	
 	
-	// Проверяет, что был выбран способ доставки с помощью DDelivery
-	function ddeliveryIsSelected () {
-		return ($('input[name=DELIVERY_ID]:checked').val() === DDELIVERY_DELIVERY_ID);
+	// Проверяет, что был выбран способ доставки с помощью SafeRoute
+	function safeRouteIsSelected () {
+		return ($('input[name=DELIVERY_ID]:checked').val() === SAFEROUTE_DELIVERY_ID);
 	}
 	
 	// Рендерит информацию о выбранном способе доставки, а также кнопку открытия виджета для выбора
 	function displayDeliveryInfo (to) {
 		setTimeout(function () {
-			// Если выбрано не DDelivery, удалить блок с информацией и кнопкой
-			if (!ddeliveryIsSelected())
-				return $('#dd-delivery-info').remove();
+			// Если выбрано не SafeRoute, удалить блок с информацией и кнопкой
+			if (!safeRouteIsSelected())
+				return $('#sr-delivery-info').remove();
 			
-			if (!$('#dd-delivery-info').length) {
+			if (!$('#sr-delivery-info').length) {
 				$('#bx-soa-delivery .bx-soa-pp .bx-soa-pp-desc-container .bx-soa-pp-company')
-					.append('<div id="dd-delivery-info"></div>');
+					.append('<div id="sr-delivery-info"></div>');
 			}
 			
 			var html = '';
@@ -105,9 +105,9 @@ $(function () {
 				html += '<p><b>' + lang.deliveryNotSelected + '</b></p>';
 			}
 			
-			html += '<div id="dd-select-delivery-btn" class="btn btn-default btn-md">' + (selectedDelivery ? lang.changeDelivery : lang.selectDelivery) + '</div>';
+			html += '<div id="sr-select-delivery-btn" class="btn btn-default btn-md">' + (selectedDelivery ? lang.changeDelivery : lang.selectDelivery) + '</div>';
 			
-			$('#dd-delivery-info').html(html);
+			$('#sr-delivery-info').html(html);
 		}, to || 0);
 	}
 	displayDeliveryInfo(200);
@@ -121,11 +121,11 @@ $(function () {
 			
 			var delivery;
 			
-			this.instance = new DDeliveryWidgetCart('dd-widget', {
-				apiScript: DDELIVERY_WIDGET.API_SCRIPT,
-				products: DDELIVERY_WIDGET.PRODUCTS,
-				weight: DDELIVERY_WIDGET.WEIGHT,
-				lang: DDELIVERY_WIDGET.LANG,
+			this.instance = new SafeRouteCartWidget('sr-widget', {
+				apiScript: SAFEROUTE_WIDGET.API_SCRIPT,
+				products: SAFEROUTE_WIDGET.PRODUCTS,
+				weight: SAFEROUTE_WIDGET.WEIGHT,
+				lang: SAFEROUTE_WIDGET.LANG,
 				mod: 'bitrix'
 			});
 			
@@ -150,43 +150,43 @@ $(function () {
 					sessionRequest({
 						action: 'set_delivery',
 						
-						ddelivery_price: selectedDelivery.delivery.point
+						saferoute_price: selectedDelivery.delivery.point
 							? selectedDelivery.delivery.point.price_delivery
 							: selectedDelivery.delivery.total_price,
-						ddelivery_order_id: response.id || 'no',
-						ddelivery_order_in_cabinet: response.confirmed ? 1 : 0,
+						saferoute_order_id: response.id || 'no',
+						saferoute_order_in_cabinet: response.confirmed ? 1 : 0,
 						
-						ddelivery_full_name: c.fullName,
-						ddelivery_phone: c.phone,
-						ddelivery_city: selectedDelivery.city.name,
-						ddelivery_address: address,
-						ddelivery_index: c.address.index
+						saferoute_full_name: c.fullName,
+						saferoute_phone: c.phone,
+						saferoute_city: selectedDelivery.city.name,
+						saferoute_address: address,
+						saferoute_index: c.address.index
 					});
 					
 					// Обновление данных в полях формы оформления на странице
-					if (ORDER_PROPS_FOR_DDELIVERY.FIO)
-						$('#soa-property-' + ORDER_PROPS_FOR_DDELIVERY.FIO).val(c.fullName);
-					if (ORDER_PROPS_FOR_DDELIVERY.ADDRESS)
-						$('#soa-property-' + ORDER_PROPS_FOR_DDELIVERY.ADDRESS).val(address);
-					if (ORDER_PROPS_FOR_DDELIVERY.CITY)
-						$('#soa-property-' + ORDER_PROPS_FOR_DDELIVERY.CITY).val(selectedDelivery.city.name);
-					if (ORDER_PROPS_FOR_DDELIVERY.PHONE)
-						$('#soa-property-' + ORDER_PROPS_FOR_DDELIVERY.PHONE).val(c.phone);
-					if (ORDER_PROPS_FOR_DDELIVERY.ZIP)
-						$('#soa-property-' + ORDER_PROPS_FOR_DDELIVERY.ZIP).val(c.address.index);
+					if (ORDER_PROPS_FOR_SAFEROUTE.FIO)
+						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.FIO).val(c.fullName);
+					if (ORDER_PROPS_FOR_SAFEROUTE.ADDRESS)
+						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.ADDRESS).val(address);
+					if (ORDER_PROPS_FOR_SAFEROUTE.CITY)
+						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.CITY).val(selectedDelivery.city.name);
+					if (ORDER_PROPS_FOR_SAFEROUTE.PHONE)
+						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.PHONE).val(c.phone);
+					if (ORDER_PROPS_FOR_SAFEROUTE.ZIP)
+						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.ZIP).val(c.address.index);
 					
 					// Закрытие виджета
 					widget.close();
 				} else {
-					alert('DDelivery Error');
+					alert('SafeRoute Error');
 					console.error(response.message);
 				}
 			});
 			
-			$('#dd-widget-wrap').addClass('visible');
+			$('#sr-widget-wrap').addClass('visible');
 		},
 		close: function () {
-			$('#dd-widget-wrap').removeClass('visible');
+			$('#sr-widget-wrap').removeClass('visible');
 			if (this.instance) this.instance.destruct();
 			this.instance = null;
 		}
@@ -209,7 +209,7 @@ $(function () {
 	
 	// Отслеживание изменения выбранного способа доставки
 	$(document).on('change', 'input[name=DELIVERY_ID]', function () {
-		if (ddeliveryIsSelected() && !selectedDelivery) {
+		if (safeRouteIsSelected() && !selectedDelivery) {
 			widget.open();
 		} else {
 			widget.close();
@@ -219,7 +219,7 @@ $(function () {
 	});
 	
 	// Закрытие кнопкой закрытия в углу
-	$('#dd-widget-wrap #dd-widget-close').on('click', function () {
+	$('#sr-widget-wrap #sr-widget-close').on('click', function () {
 		widget.close();
 	});
 	
@@ -229,7 +229,7 @@ $(function () {
 	});
 	
 	// Клик по кнопке выбора способа доставки
-	$('#bx-soa-delivery').on('click', '#dd-select-delivery-btn', function () {
+	$('#bx-soa-delivery').on('click', '#sr-select-delivery-btn', function () {
 		widget.open();
 	});
 	
@@ -240,8 +240,8 @@ $(function () {
 	
 	// Отправка формы оформления заказа
 	$('#bx-soa-order-form').on('submit', function (e) {
-		// Если доставкой выбрана DDelivery, но в виджете способ доставки не выбран
-		if (ddeliveryIsSelected() && !selectedDelivery) {
+		// Если доставкой выбрана SafeRoute, но в виджете способ доставки не выбран
+		if (safeRouteIsSelected() && !selectedDelivery) {
 			// Остановка отправки формы
 			BX.PreventDefault(e);
 			// Отображение виджета

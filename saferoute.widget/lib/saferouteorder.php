@@ -1,17 +1,17 @@
 <?php
 
-namespace DDeliveryru\Widget;
+namespace Saferoute\Widget;
 
 use \Bitrix\Main\Entity;
 
-class DDeliveryOrderTable extends Entity\DataManager
+class SafeRouteOrderTable extends Entity\DataManager
 {
 	/**
 	 * @return string
 	 */
 	public static function getTableName()
 	{
-		return 'ddelivery_order';
+		return 'saferoute_order';
 	}
 	
 	/**
@@ -24,12 +24,12 @@ class DDeliveryOrderTable extends Entity\DataManager
 			new Entity\IntegerField('ORDER_ID', [
 				'primary' => true,
 			]),
-			// ID заказа в DDelivery
-			new Entity\StringField('DDELIVERY_ID', [
+			// ID заказа в SafeRoute
+			new Entity\StringField('SAFEROUTE_ID', [
 				'required' => true,
 			]),
-			// Флаг, что заказ был перенесен в ЛК DDelivery
-			new Entity\BooleanField('IN_DDELIVERY_CABINET'),
+			// Флаг, что заказ был перенесен в ЛК SafeRoute
+			new Entity\BooleanField('IN_SAFEROUTE_CABINET'),
 		];
 	}
 }

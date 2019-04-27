@@ -1,6 +1,6 @@
 <?php
 
-namespace DDeliveryru\Widget;
+namespace Saferoute\Widget;
 
 /**
  * API-скрипт виджета

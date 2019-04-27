@@ -12,16 +12,16 @@ use \Bitrix\Sale\Delivery\Services\Manager as DeliveryManager;
 
 Loc::loadMessages(__FILE__);
 
-class ddeliveryru_widget extends CModule
+class saferoute_widget extends CModule
 {
-	var $MODULE_ID = 'ddeliveryru.widget';
+	var $MODULE_ID = 'saferoute.widget';
 	
-	const SALE_PAY_SYSTEM_ACTION_FILE = '/bitrix/php_interface/include/sale_payment/DDelivery';
-	const DELIVERY_SRV_CLASS_NAME = '\Sale\Handlers\Delivery\DdeliveryHandler';
+	const SALE_PAY_SYSTEM_ACTION_FILE = '/bitrix/php_interface/include/sale_payment/SafeRoute';
+	const DELIVERY_SRV_CLASS_NAME = '\Sale\Handlers\Delivery\SaferouteHandler';
 	
 	
-	// ID загруженного в Битрикс файла с логотипом DDelivery
-	private $ddelivery_logo_id;
+	// ID загруженного в Битрикс файла с логотипом SafeRoute
+	private $saferoute_logo_id;
 	
 	
 	/**
@@ -50,18 +50,18 @@ class ddeliveryru_widget extends CModule
 	 ***************************/
 	
 	/**
-	 * Загружает логотип DDelivery в систему
+	 * Загружает логотип SafeRoute в систему
 	 */
 	private function LoadLogo()
 	{
-		$this->ddelivery_logo_id = CFile::SaveFile([
+		$this->saferoute_logo_id = CFile::SaveFile([
 			'name'        => 'logo.png',
 			'tmp_name'    => __DIR__ . DIRECTORY_SEPARATOR . 'logo.png',
 			'type'        => 'image/png',
 			'del'         => false,
 			'MODULE_ID'   => $this->MODULE_ID,
-			'description' => 'DDelivery logo',
-		], 'ddelivery');
+			'description' => 'SafeRoute logo',
+		], 'saferoute');
 	}
 	
 	/**
@@ -71,30 +71,30 @@ class ddeliveryru_widget extends CModule
 	{
 		Loader::includeModule($this->MODULE_ID);
 		
-		// Создание таблицы с DDelivery ID заказов
-		if(!Application::getConnection()->isTableExists(Base::getInstance('\DDeliveryru\Widget\DDeliveryOrderTable')->getDBTableName()))
+		// Создание таблицы с SafeRoute ID заказов
+		if(!Application::getConnection()->isTableExists(Base::getInstance('\Saferoute\Widget\SafeRouteOrderTable')->getDBTableName()))
 		{
-			Base::getInstance('\DDeliveryru\Widget\DDeliveryOrderTable')->createDbTable();
+			Base::getInstance('\Saferoute\Widget\SafeRouteOrderTable')->createDbTable();
 		}
 		
 		if(Loader::includeModule('sale'))
 		{
-			// Добавление способа доставки DDelivery
+			// Добавление способа доставки SafeRoute
 			DeliveryManager::add([
-				'NAME'        => 'DDelivery',
+				'NAME'        => 'SafeRoute',
 				'ACTIVE'      => 'Y',
-				'DESCRIPTION' => Loc::getMessage('DDELIVERY_WIDGET_DELIVERY_SERV_DESC'),
+				'DESCRIPTION' => Loc::getMessage('SAFEROUTE_WIDGET_DELIVERY_SERV_DESC'),
 				'CURRENCY'    => 'RUB',
-				'LOGOTIP'     => $this->ddelivery_logo_id,
+				'LOGOTIP'     => $this->saferoute_logo_id,
 				'CLASS_NAME'  => '\Bitrix\Sale\Delivery\Services\Configurable',
 			]);
 			
 			// Добавление способа оплаты
 			/* Отключено, пока виджет не поддерживает эквайринг
 			CSalePaySystemAction::Add([
-				'NAME'        => 'DDelivery',
+				'NAME'        => 'SafeRoute',
 				'NEW_WINDOW'  => 'N',
-				'DESCRIPTION' => Loc::getMessage('DDELIVERY_WIDGET_PAY_SYSTEM_DESC'),
+				'DESCRIPTION' => Loc::getMessage('SAFEROUTE_WIDGET_PAY_SYSTEM_DESC'),
 				'ACTION_FILE' => self::SALE_PAY_SYSTEM_ACTION_FILE,
 				'IS_CASH'     => 'A',
 			]);
@@ -115,8 +115,8 @@ class ddeliveryru_widget extends CModule
 	 */
 	public function InstallEvents()
 	{
-		EventManager::getInstance()->registerEventHandler('sale', 'OnSaleOrderSaved', $this->MODULE_ID, '\DDeliveryru\Widget\Common', 'onSaleOrderSaved');
-		EventManager::getInstance()->registerEventHandler('main', 'OnPageStart', $this->MODULE_ID, '\DDeliveryru\Widget\Common', 'onPageStart');
+		EventManager::getInstance()->registerEventHandler('sale', 'OnSaleOrderSaved', $this->MODULE_ID, '\Saferoute\Widget\Common', 'onSaleOrderSaved');
+		EventManager::getInstance()->registerEventHandler('main', 'OnPageStart', $this->MODULE_ID, '\Saferoute\Widget\Common', 'onPageStart');
 	}
 	
 	/**
@@ -130,11 +130,11 @@ class ddeliveryru_widget extends CModule
 		
 		// PHP
 		CopyDirFiles($this->GetPath() . '/install/api', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/components/' . $this->MODULE_ID . '/api', true, true);
-		CopyDirFiles($this->GetPath() . '/install/sale_delivery', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/include/sale_delivery/ddelivery', true, true);
+		CopyDirFiles($this->GetPath() . '/install/sale_delivery', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/include/sale_delivery/saferoute', true, true);
 		
 		// Способ оплаты
 		/* Отключено, пока виджет не поддерживает эквайринг
-		CopyDirFiles($this->GetPath() . '/install/sale_payment', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/include/sale_payment/DDelivery', true, true);
+		CopyDirFiles($this->GetPath() . '/install/sale_payment', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/include/sale_payment/SafeRoute', true, true);
 		*/
 	}
 	
@@ -144,7 +144,7 @@ class ddeliveryru_widget extends CModule
 	 ***************************/
 	
 	/**
-	 * Удаляет логотип DDelivery из системы
+	 * Удаляет логотип SafeRoute из системы
 	 */
 	private function RemoveLogo()
 	{
@@ -170,9 +170,9 @@ class ddeliveryru_widget extends CModule
 		
 		if(!$save_tables)
 		{
-			// Удаление таблицы с DDelivery ID заказов
+			// Удаление таблицы с SafeRoute ID заказов
 			Application::getConnection()->queryExecute(
-				'DROP TABLE IF EXISTS ' . Base::getInstance('\DDeliveryru\Widget\DDeliveryOrderTable')->getDBTableName()
+				'DROP TABLE IF EXISTS ' . Base::getInstance('\Saferoute\Widget\SafeRouteOrderTable')->getDBTableName()
 			);
 		}
 		
@@ -181,7 +181,7 @@ class ddeliveryru_widget extends CModule
 		
 		if(Loader::includeModule('sale'))
 		{
-			// Удаление способа доставки DDelivery
+			// Удаление способа доставки SafeRoute
 			$delivery_services = DeliveryManager::getActiveList();
 			foreach($delivery_services as $delivery_service)
 			{
@@ -205,8 +205,8 @@ class ddeliveryru_widget extends CModule
 	 */
 	public function UnInstallEvents()
 	{
-		EventManager::getInstance()->unRegisterEventHandler('sale', 'OnSaleOrderSaved', $this->MODULE_ID, '\DDeliveryru\Widget\Common', 'onSaleOrderSaved');
-		EventManager::getInstance()->unRegisterEventHandler('main', 'OnPageStart', $this->MODULE_ID, '\DDeliveryru\Widget\Common', 'onPageStart');
+		EventManager::getInstance()->unRegisterEventHandler('sale', 'OnSaleOrderSaved', $this->MODULE_ID, '\Saferoute\Widget\Common', 'onSaleOrderSaved');
+		EventManager::getInstance()->unRegisterEventHandler('main', 'OnPageStart', $this->MODULE_ID, '\Saferoute\Widget\Common', 'onPageStart');
 	}
 	
 	/**
@@ -220,11 +220,11 @@ class ddeliveryru_widget extends CModule
 		
 		// PHP
 		Directory::deleteDirectory($_SERVER['DOCUMENT_ROOT'] . '/bitrix/components/' . $this->MODULE_ID);
-		Directory::deleteDirectory($_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/include/sale_delivery/ddelivery');
+		Directory::deleteDirectory($_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/include/sale_delivery/saferoute');
 		
 		// Способ оплаты
 		/* Отключено, пока виджет не поддерживает эквайринг
-		Directory::deleteDirectory($_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/include/sale_payment/DDelivery');
+		Directory::deleteDirectory($_SERVER['DOCUMENT_ROOT'] . '/bitrix/php_interface/include/sale_payment/SafeRoute');
 		*/
 	}
 	
@@ -235,11 +235,11 @@ class ddeliveryru_widget extends CModule
 		
 		$this->MODULE_VERSION      = $arModuleVersion['VERSION'];
 		$this->MODULE_VERSION_DATE = $arModuleVersion['VERSION_DATE'];
-		$this->PARTNER_NAME        = Loc::getMessage('DDELIVERY_PARTNER_NAME');
+		$this->PARTNER_NAME        = Loc::getMessage('SAFEROUTE_PARTNER_NAME');
 		
-		$this->MODULE_NAME         = Loc::getMessage('DDELIVERY_WIDGET_MOD_NAME');
-		$this->MODULE_DESCRIPTION  = Loc::getMessage('DDELIVERY_WIDGET_MOD_DESCRIPTION');
-		$this->PARTNER_URI         = Loc::getMessage('DDELIVERY_WIDGET_PARTNER_URI');
+		$this->MODULE_NAME         = Loc::getMessage('SAFEROUTE_WIDGET_MOD_NAME');
+		$this->MODULE_DESCRIPTION  = Loc::getMessage('SAFEROUTE_WIDGET_MOD_DESCRIPTION');
+		$this->PARTNER_URI         = Loc::getMessage('SAFEROUTE_WIDGET_PARTNER_URI');
 		
 		if(Loader::includeModule('sale'))
 		{
@@ -247,10 +247,10 @@ class ddeliveryru_widget extends CModule
 			// (да, костыль, но в InstallDB() оно нихера не работает)
 			foreach(DeliveryManager::getActiveList() as $d)
 			{
-				if(($d['ID'] === $d['CODE'] || !$d['CODE']) && $d['NAME'] === 'DDelivery')
+				if(($d['ID'] === $d['CODE'] || !$d['CODE']) && $d['NAME'] === 'SafeRoute')
 				{
 					DeliveryManager::update($d['ID'], [
-						'CODE' => 'DDelivery',
+						'CODE' => 'SafeRoute',
 						'CLASS_NAME' => self::DELIVERY_SRV_CLASS_NAME,
 					]);
 				}
@@ -276,10 +276,10 @@ class ddeliveryru_widget extends CModule
 		}
 		else
 		{
-			$APPLICATION->ThrowException(Loc::getMessage('DDELIVERY_WIDGET_ERROR_VERSION'));
+			$APPLICATION->ThrowException(Loc::getMessage('SAFEROUTE_WIDGET_ERROR_VERSION'));
 		}
 		
-		$APPLICATION->IncludeAdminFile(Loc::getMessage('DDELIVERY_WIDGET_INSTALL_TITLE'), $this->GetPath() . '/install/step.php');
+		$APPLICATION->IncludeAdminFile(Loc::getMessage('SAFEROUTE_WIDGET_INSTALL_TITLE'), $this->GetPath() . '/install/step.php');
 	}
 	
 	/**
@@ -294,7 +294,7 @@ class ddeliveryru_widget extends CModule
 		
 		if($request['step'] < 2)
 		{
-			$APPLICATION->IncludeAdminFile(Loc::getMessage('DDELIVERY_WIDGET_UNINSTALL_TITLE'), $this->GetPath() . '/install/unstep1.php');
+			$APPLICATION->IncludeAdminFile(Loc::getMessage('SAFEROUTE_WIDGET_UNINSTALL_TITLE'), $this->GetPath() . '/install/unstep1.php');
 		}
 		elseif($request['step'] == 2)
 		{
@@ -305,7 +305,7 @@ class ddeliveryru_widget extends CModule
 			
 			ModuleManager::unRegisterModule($this->MODULE_ID);
 			
-			$APPLICATION->IncludeAdminFile(Loc::getMessage('DDELIVERY_WIDGET_UNINSTALL_TITLE'), $this->GetPath() . '/install/unstep2.php');
+			$APPLICATION->IncludeAdminFile(Loc::getMessage('SAFEROUTE_WIDGET_UNINSTALL_TITLE'), $this->GetPath() . '/install/unstep2.php');
 		}
 	}
 }

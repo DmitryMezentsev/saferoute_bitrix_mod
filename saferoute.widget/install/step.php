@@ -20,7 +20,7 @@ else
 	echo CAdminMessage::ShowMessage([
 		'TYPE'    => 'OK',
 		'MESSAGE' => Loc::getMessage('MOD_INST_OK') . '.',
-		'DETAILS' => Loc::getMessage('DDELIVERY_WIDGET_API_KEY_PROMPT'),
+		'DETAILS' => Loc::getMessage('SAFEROUTE_WIDGET_API_KEY_PROMPT'),
 		'HTML'    => true,
 	]);
 }

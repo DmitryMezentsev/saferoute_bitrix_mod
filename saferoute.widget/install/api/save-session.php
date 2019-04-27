@@ -8,26 +8,26 @@ switch($_POST['action'])
 {
 	// ”становка выбранной доставки
 	case 'set_delivery':
-		$_SESSION['ddelivery_price']    = $_POST['ddelivery_price'];
-		$_SESSION['ddelivery_order_id'] = $_POST['ddelivery_order_id'];
-		$_SESSION['ddelivery_order_in_cabinet'] = (bool) $_POST['ddelivery_order_in_cabinet'];
+		$_SESSION['saferoute_price']    = $_POST['saferoute_price'];
+		$_SESSION['saferoute_order_id'] = $_POST['saferoute_order_id'];
+		$_SESSION['saferoute_order_in_cabinet'] = (bool) $_POST['saferoute_order_in_cabinet'];
 		
-		$_SESSION['ddelivery_full_name'] = $_POST['ddelivery_full_name'];
-		$_SESSION['ddelivery_phone']     = $_POST['ddelivery_phone'];
-		$_SESSION['ddelivery_city']      = $_POST['ddelivery_city'];
-		$_SESSION['ddelivery_address']   = $_POST['ddelivery_address'];
-		$_SESSION['ddelivery_index']     = $_POST['ddelivery_index'];
+		$_SESSION['saferoute_full_name'] = $_POST['saferoute_full_name'];
+		$_SESSION['saferoute_phone']     = $_POST['saferoute_phone'];
+		$_SESSION['saferoute_city']      = $_POST['saferoute_city'];
+		$_SESSION['saferoute_address']   = $_POST['saferoute_address'];
+		$_SESSION['saferoute_index']     = $_POST['saferoute_index'];
 		break;
 	
 	// —брос выбранной доставки
 	case 'reset_delivery':
-		$_SESSION['ddelivery_price']            = 0;
-		$_SESSION['ddelivery_order_id']         = null;
-		$_SESSION['ddelivery_order_in_cabinet'] = null;
-		$_SESSION['ddelivery_full_name']        = '';
-		$_SESSION['ddelivery_phone']            = '';
-		$_SESSION['ddelivery_city']             = '';
-		$_SESSION['ddelivery_address']          = '';
-		$_SESSION['ddelivery_index']            = '';
+		$_SESSION['saferoute_price']            = 0;
+		$_SESSION['saferoute_order_id']         = null;
+		$_SESSION['saferoute_order_in_cabinet'] = null;
+		$_SESSION['saferoute_full_name']        = '';
+		$_SESSION['saferoute_phone']            = '';
+		$_SESSION['saferoute_city']             = '';
+		$_SESSION['saferoute_address']          = '';
+		$_SESSION['saferoute_index']            = '';
 		break;
 }

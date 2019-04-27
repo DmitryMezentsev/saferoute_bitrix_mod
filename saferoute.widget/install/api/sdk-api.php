@@ -20,7 +20,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_be
 
 use Bitrix\Main\Application;
 use Bitrix\Main\Type\DateTime;
-use DDeliveryru\Widget\Common;
+use Saferoute\Widget\Common;
 
 
 
@@ -42,7 +42,7 @@ if(Common::checkAPIKey($request->get('k')))
 	{
 		sendAsJSON(Common::getShopPaymentMethods(), SITE_CHARSET === 'windows-1251');
 	}
-	// Уведомления об изменениях статуса заказа в DDelivery
+	// Уведомления об изменениях статуса заказа в SafeRoute
 	elseif($route === 'traffic-orders.json')
 	{
 		$id = $request->getPost('id');
@@ -60,7 +60,7 @@ if(Common::checkAPIKey($request->get('k')))
 			if($track_number) $data['TRACKING_NUMBER'] = $track_number;
 			
 			// Сохранение нового статуса заказа и трекинг-номера, если он был передан
-			Common::updateOrderByDDeliveryID($id, $data);
+			Common::updateOrderBySafeRouteID($id, $data);
 		}
 		else
 		{

@@ -13,9 +13,9 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_be
 
 $request = Bitrix\Main\Application::getInstance()->getContext()->getRequest();
 
-$widget_api = new DDeliveryru\Widget\WidgetApi();
+$widget_api = new Saferoute\Widget\WidgetApi();
 
-$widget_api->setApiKey(Bitrix\Main\Config\Option::get('ddeliveryru.widget', 'api_key'));
+$widget_api->setApiKey(Bitrix\Main\Config\Option::get('saferoute.widget', 'api_key'));
 $widget_api->setMethod($request->getRequestMethod());
 $widget_api->setData($request->get('data') ? $request->get('data') : []);
 

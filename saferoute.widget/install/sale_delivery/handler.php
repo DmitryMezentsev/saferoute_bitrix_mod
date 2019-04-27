@@ -1,16 +1,16 @@
 <?php
 
-namespace Sale\Handlers\Delivery;
+namespace Sale\Handlers\Saferoute;
 
-use Bitrix\Sale\Delivery\CalculationResult;
-use Bitrix\Sale\Delivery\Services\Base;
+use Bitrix\Sale\Saferoute\CalculationResult;
+use Bitrix\Sale\Saferoute\Services\Base;
 
 
-class DdeliveryHandler extends Base
+class SaferouteHandler extends Base
 {
 	public static function getClassTitle()
 	{
-		return 'DDelivery';
+		return 'SafeRoute';
 	}
 	
 	public static function getClassDescription()
@@ -23,7 +23,7 @@ class DdeliveryHandler extends Base
 		if (session_status() === PHP_SESSION_NONE) session_start();
 		
 		$result = new CalculationResult();
-		$result->setDeliveryPrice(roundEx($_SESSION['ddelivery_price'], 2));
+		$result->setDeliveryPrice(roundEx($_SESSION['saferoute_price'], 2));
 		
 		return $result;
 	}

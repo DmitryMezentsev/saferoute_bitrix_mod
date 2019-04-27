@@ -1,6 +1,6 @@
 <?php
 
-namespace DDeliveryru\Widget;
+namespace Saferoute\Widget;
 
 use \Bitrix\Main\Config\Option;
 use \Bitrix\Main\Loader;
@@ -31,13 +31,13 @@ class Common
 	}
 	
 	/**
-	 * Возвращает API-ключ DDelivery из настроек модуля
+	 * Возвращает API-ключ SafeRoute из настроек модуля
 	 * 
 	 * @return string
 	 */
 	public static function getAPIKey()
 	{
-		return \Bitrix\Main\Config\Option::get('ddeliveryru.widget', 'api_key');
+		return \Bitrix\Main\Config\Option::get('saferoute.widget', 'api_key');
 	}
 	
 	/**
@@ -98,19 +98,19 @@ class Common
 	}
 	
 	/**
-	 * Обновляет данные заказа по DDelivery ID
+	 * Обновляет данные заказа по SafeRoute ID
 	 * 
-	 * @param $ddelivery_id int|string DDelivery ID
+	 * @param $saferoute_id int|string SafeRoute ID
 	 * @param $data array Новые значения (STATUS_ID, TRACKING_NUMBER)
 	 * @return bool
 	 */
-	public static function updateOrderByDDeliveryID($ddelivery_id, array $data)
+	public static function updateOrderBySafeRouteID($saferoute_id, array $data)
 	{
 		if(Loader::includeModule('sale'))
 		{
-			$order = DDeliveryOrderTable::getList([
+			$order = SafeRouteOrderTable::getList([
 				'select' => ['ORDER_ID'],
-				'filter' => ['=DDELIVERY_ID' => $ddelivery_id],
+				'filter' => ['=SAFEROUTE_ID' => $saferoute_id],
 			])->fetch();
 			
 			if(!$order) return false;
@@ -122,14 +122,14 @@ class Common
 	}
 	
 	/**
-	 * Обновляет данные заказа на сервере DDelivery
+	 * Обновляет данные заказа на сервере SafeRoute
 	 * 
 	 * @param $data array Параметры запроса
      * @return mixed
 	 */
-	public static function updateOrderInDDelivery(array $data)
+	public static function updateOrderInSafeRoute(array $data)
 	{
-        $api = 'https://ddelivery.ru/api/' . self::getAPIKey() . '/sdk/update-order.json';
+        $api = 'https://api.saferoute.ru/api/' . self::getAPIKey() . '/sdk/update-order.json';
 		
         $curl = curl_init($api);
 		
@@ -157,49 +157,49 @@ class Common
 		if($event->getParameter('IS_NEW'))
 		{
 			$delivery_id = (int) $entity->getField('DELIVERY_ID');
-			$ddelivery_order_id = self::session('ddelivery_order_id');
+			$saferoute_order_id = self::session('saferoute_order_id');
 			
-			// Только для заказов, для которых была выбрана доставка DDelivery
-			if($delivery_id === self::getDDeliveryDeliveryID() && $ddelivery_order_id)
+			// Только для заказов, для которых была выбрана доставка SafeRoute
+			if($delivery_id === self::getSafeRouteDeliveryID() && $saferoute_order_id)
 			{
 				$win1251 = SITE_CHARSET === 'windows-1251';
 				
-				$prop_id_location = self::getOrderPropIDByCode(Option::get('ddeliveryru.widget', 'ord_prop_code_location'));
-				$prop_id_fio      = self::getOrderPropIDByCode(Option::get('ddeliveryru.widget', 'ord_prop_code_fio'));
-				$prop_id_phone    = self::getOrderPropIDByCode(Option::get('ddeliveryru.widget', 'ord_prop_code_phone'));
-				$prop_id_city     = self::getOrderPropIDByCode(Option::get('ddeliveryru.widget', 'ord_prop_code_city'));
-				$prop_id_address  = self::getOrderPropIDByCode(Option::get('ddeliveryru.widget', 'ord_prop_code_address'));
-				$prop_id_zip      = self::getOrderPropIDByCode(Option::get('ddeliveryru.widget', 'ord_prop_code_zip'));
+				$prop_id_location = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_location'));
+				$prop_id_fio      = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_fio'));
+				$prop_id_phone    = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_phone'));
+				$prop_id_city     = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_city'));
+				$prop_id_address  = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_address'));
+				$prop_id_zip      = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_zip'));
 				
 				// Сохранение данных доставки в свойствах заказа
 				$pc = $entity->getPropertyCollection();
 				if ($pc->getItemByOrderPropertyId($prop_id_location))
 					$pc->getItemByOrderPropertyId($prop_id_location)->setValue('');
 				if ($pc->getItemByOrderPropertyId($prop_id_fio))
-					$pc->getItemByOrderPropertyId($prop_id_fio)->setValue(self::session('ddelivery_full_name', $win1251));
+					$pc->getItemByOrderPropertyId($prop_id_fio)->setValue(self::session('saferoute_full_name', $win1251));
 				if ($pc->getItemByOrderPropertyId($prop_id_phone))
-					$pc->getItemByOrderPropertyId($prop_id_phone)->setValue(self::session('ddelivery_phone', $win1251));
+					$pc->getItemByOrderPropertyId($prop_id_phone)->setValue(self::session('saferoute_phone', $win1251));
 				if ($pc->getItemByOrderPropertyId($prop_id_city))
-					$pc->getItemByOrderPropertyId($prop_id_city)->setValue(self::session('ddelivery_city', $win1251));
+					$pc->getItemByOrderPropertyId($prop_id_city)->setValue(self::session('saferoute_city', $win1251));
 				if ($pc->getItemByOrderPropertyId($prop_id_address))
-					$pc->getItemByOrderPropertyId($prop_id_address)->setValue(self::session('ddelivery_address', $win1251));
+					$pc->getItemByOrderPropertyId($prop_id_address)->setValue(self::session('saferoute_address', $win1251));
 				if ($pc->getItemByOrderPropertyId($prop_id_zip))
-					$pc->getItemByOrderPropertyId($prop_id_zip)->setValue(self::session('ddelivery_index', $win1251));
+					$pc->getItemByOrderPropertyId($prop_id_zip)->setValue(self::session('saferoute_index', $win1251));
 				$entity->save();
 				
 				// Только если не была выбрана собственная компания доставки
-				if ($ddelivery_order_id !== 'no')
+				if ($saferoute_order_id !== 'no')
 				{
-					// Сохранение DDelivery ID заказа
-					DDeliveryOrderTable::add([
+					// Сохранение SafeRoute ID заказа
+					SafeRouteOrderTable::add([
 						'ORDER_ID'             => $order_id,
-						'DDELIVERY_ID'         => $ddelivery_order_id,
-						'IN_DDELIVERY_CABINET' => self::session('ddelivery_order_in_cabinet'),
+						'SAFEROUTE_ID'         => $saferoute_order_id,
+						'IN_SAFEROUTE_CABINET' => self::session('saferoute_order_in_cabinet'),
 					]);
 					
 					// Отправка запроса к SDK
-					$response = self::updateOrderInDDelivery([
-						'id'             => $ddelivery_order_id,
+					$response = self::updateOrderInSafeRoute([
+						'id'             => $saferoute_order_id,
 						'cms_id'         => $order_id,
 						'status'         => $entity->getField('STATUS_ID'),
 						'payment_method' => $entity->getField('PAY_SYSTEM_ID'),
@@ -208,10 +208,10 @@ class Common
 					// Если заказ был перенесен в ЛК
 					if($response['status'] === 'ok' && isset($response['data']['cabinet_id']))
 					{
-						// Обновляем его DDelivery ID и устанавливаем флаг, что заказ находится в ЛК
-						DDeliveryOrderTable::update($order_id, [
-							'DDELIVERY_ID'         => $response['data']['cabinet_id'],
-							'IN_DDELIVERY_CABINET' => true,
+						// Обновляем его SafeRoute ID и устанавливаем флаг, что заказ находится в ЛК
+						SafeRouteOrderTable::update($order_id, [
+							'SAFEROUTE_ID'         => $response['data']['cabinet_id'],
+							'IN_SAFEROUTE_CABINET' => true,
 						]);
 					}
 				}
@@ -222,13 +222,13 @@ class Common
 		{
 			$order = \CSaleOrder::GetByID($order_id);
 			
-			$dd_order = DDeliveryOrderTable::getByPrimary($order_id)->fetchObject();
+			$sr_order = SafeRouteOrderTable::getByPrimary($order_id)->fetchObject();
 			
-			// Только заказы, имеющие DDelivery ID и ещё не перенесенные в ЛК
-			if($dd_order && $dd_order->get('DDELIVERY_ID') && !$dd_order->get('IN_DDELIVERY_CABINET'))
+			// Только заказы, имеющие SafeRoute ID и ещё не перенесенные в ЛК
+			if($sr_order && $sr_order->get('SAFEROUTE_ID') && !$sr_order->get('IN_SAFEROUTE_CABINET'))
 			{
-				$response = self::updateOrderInDDelivery([
-					'id'     => $dd_order->get('DDELIVERY_ID'),
+				$response = self::updateOrderInSafeRoute([
+					'id'     => $sr_order->get('SAFEROUTE_ID'),
 					'status' => $order['STATUS_ID'],
 					'cms_id' => $order_id,
 				]);
@@ -238,10 +238,10 @@ class Common
 					// Если заказ был перенесен в ЛК
 					if(isset($response['data']['cabinet_id']))
 					{
-						// Устанавливаем соответствующий флаг и сохраняем новый DDelivery ID
-						$dd_order->set('IN_DDELIVERY_CABINET', true);
-						$dd_order->set('DDELIVERY_ID', $response['data']['cabinet_id']);
-						$dd_order->save();
+						// Устанавливаем соответствующий флаг и сохраняем новый SafeRoute ID
+						$sr_order->set('IN_SAFEROUTE_CABINET', true);
+						$sr_order->set('SAFEROUTE_ID', $response['data']['cabinet_id']);
+						$sr_order->save();
 					}
 				}
 			}
@@ -249,14 +249,14 @@ class Common
 	}
 	
 	/**
-	 * Возвращает ID доставки DDelivery в базе Битрикса
+	 * Возвращает ID доставки SafeRoute в базе Битрикса
 	 * 
 	 * @return int|null
 	 */
-	public static function getDDeliveryDeliveryID()
+	public static function getSafeRouteDeliveryID()
 	{
 		foreach(\Bitrix\Sale\Delivery\Services\Manager::getActiveList() as $d)
-			if($d['CODE'] === 'DDelivery') return (int) $d['ID'];
+			if($d['CODE'] === 'SafeRoute') return (int) $d['ID'];
 		
 		return null;
 	}
@@ -266,7 +266,7 @@ class Common
 	 */
 	public static function onPageStart()
 	{
-		Loader::includeModule('ddeliveryru.widget');
+		Loader::includeModule('saferoute.widget');
 	}
 	
 	/**

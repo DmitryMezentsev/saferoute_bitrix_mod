@@ -5,14 +5,14 @@ use Bitrix\Main\Config\Option;
 
 if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Context::getCurrent()->getRequest()->isAdminSection())
 {
-	if(!Option::get('ddeliveryru.widget', 'api_key'))
+	if(!Option::get('saferoute.widget', 'api_key'))
 	{
-		$inlineJs = 'var DDELIVERY_WIDGET = false;';
+		$inlineJs = 'var SAFEROUTE_WIDGET = false;';
 	}
 	else
 	{
-		$inlineJs  = 'var DDELIVERY_WIDGET = {};';
-		$inlineJs .= 'DDELIVERY_WIDGET.PRODUCTS = [';
+		$inlineJs  = 'var SAFEROUTE_WIDGET = {};';
+		$inlineJs .= 'SAFEROUTE_WIDGET.PRODUCTS = [';
 		
 		// Получение товаров текущей корзины
 		$cart = CSaleBasket::GetList([], [
@@ -71,20 +71,20 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
 		
 		$inlineJs .= '];';
 		
-		$inlineJs .= "DDELIVERY_WIDGET.LANG = '" . LANGUAGE_ID . "';";
-		$inlineJs .= "DDELIVERY_WIDGET.API_SCRIPT = '" . SITE_DIR . "bitrix/components/ddeliveryru.widget/api/widget-api.php';";
-		$inlineJs .= "DDELIVERY_WIDGET.SESSION_SCRIPT = '" . SITE_DIR . "bitrix/components/ddeliveryru.widget/api/save-session.php';";
-		$inlineJs .= "DDELIVERY_WIDGET.WEIGHT = " . round($calculated_order['ORDER_WEIGHT']/1000, 2) . ";";
+		$inlineJs .= "SAFEROUTE_WIDGET.LANG = '" . LANGUAGE_ID . "';";
+		$inlineJs .= "SAFEROUTE_WIDGET.API_SCRIPT = '" . SITE_DIR . "bitrix/components/saferoute.widget/api/widget-api.php';";
+		$inlineJs .= "SAFEROUTE_WIDGET.SESSION_SCRIPT = '" . SITE_DIR . "bitrix/components/saferoute.widget/api/save-session.php';";
+		$inlineJs .= "SAFEROUTE_WIDGET.WEIGHT = " . round($calculated_order['ORDER_WEIGHT']/1000, 2) . ";";
 
-		// ID доставки DDelivery в БД
-		$inlineJs .= 'var DDELIVERY_DELIVERY_ID = "' . DDeliveryru\Widget\Common::getDDeliveryDeliveryID() . '";';
+		// ID доставки SafeRoute в БД
+		$inlineJs .= 'var SAFEROUTE_DELIVERY_ID = "' . Saferoute\Widget\Common::getSafeRouteDeliveryID() . '";';
 
 		// Получение ID свойств заказа
 		// Получение ID свойств заказа
-		$inlineJs .= 'var ORDER_PROPS_FOR_DDELIVERY = {};';
+		$inlineJs .= 'var ORDER_PROPS_FOR_SAFEROUTE = {};';
 		$order_props = CSaleOrderProps::GetList([], ['=PERSON_TYPE_ID' => 1], false, false, ['ID', 'CODE'])->arResult;
 		foreach($order_props as $order_prop) {
-			if($order_prop['CODE']) $inlineJs .= "ORDER_PROPS_FOR_DDELIVERY['$order_prop[CODE]'] = $order_prop[ID];";
+			if($order_prop['CODE']) $inlineJs .= "ORDER_PROPS_FOR_SAFEROUTE['$order_prop[CODE]'] = $order_prop[ID];";
 		}
 	}
 	
@@ -92,8 +92,8 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
 	global $APPLICATION;
 
 	CJSCore::Init(['jquery2']); 
-	$APPLICATION->AddHeadScript('https://ddelivery.ru/front/widget-cart/public/api.js');
-	$APPLICATION->SetAdditionalCSS(SITE_DIR . 'bitrix/css/ddeliveryru.widget/common.css');
+	$APPLICATION->AddHeadScript('https://widgets.saferoute.ru/cart/api.js');
+	$APPLICATION->SetAdditionalCSS(SITE_DIR . 'bitrix/css/saferoute.widget/common.css');
 	$APPLICATION->AddHeadString('<script>' . $inlineJs . '</script>');
-	$APPLICATION->AddHeadString('<script src="' . SITE_DIR . 'bitrix/js/ddeliveryru.widget/main.js" charset="utf-8"></script>');
+	$APPLICATION->AddHeadString('<script src="' . SITE_DIR . 'bitrix/js/saferoute.widget/main.js" charset="utf-8"></script>');
 }

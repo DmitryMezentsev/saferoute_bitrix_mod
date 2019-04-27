@@ -10,7 +10,7 @@ Loc::loadMessages(__FILE__);
 	<?=bitrix_sessid_post();?>
 	
 	<input type="hidden" name="lang" value="<?=LANGUAGE_ID;?>">
-	<input type="hidden" name="id" value="ddeliveryru.widget">
+	<input type="hidden" name="id" value="saferoute.widget">
 	<input type="hidden" name="uninstall" value="Y">
 	<input type="hidden" name="step" value="2">
 	

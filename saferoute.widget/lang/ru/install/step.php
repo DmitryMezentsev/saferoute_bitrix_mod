@@ -1,3 +1,3 @@
 <?php
 
-$MESS['DDELIVERY_WIDGET_API_KEY_PROMPT'] = 'Не забудьте указать API-ключ DDelivery в настройках модуля.';
+$MESS['SAFEROUTE_WIDGET_API_KEY_PROMPT'] = 'Не забудьте указать API-ключ SafeRoute в настройках модуля.';
