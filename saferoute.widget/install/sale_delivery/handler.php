@@ -1,9 +1,9 @@
 <?php
 
-namespace Sale\Handlers\Saferoute;
+namespace Sale\Handlers\Delivery;
 
-use Bitrix\Sale\Saferoute\CalculationResult;
-use Bitrix\Sale\Saferoute\Services\Base;
+use Bitrix\Sale\Delivery\CalculationResult;
+use Bitrix\Sale\Delivery\Services\Base;
 
 
 class SaferouteHandler extends Base
