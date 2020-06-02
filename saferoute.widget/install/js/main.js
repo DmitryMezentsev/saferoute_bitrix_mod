@@ -86,7 +86,7 @@ $(function () {
 
 				if (type !== 3) html += ', ' + selectedDelivery.delivery.deliveryCompanyName;
 
-				html += ', ' + selectedDelivery.delivery.deliveryDate;
+				html += ', ' + selectedDelivery.deliveryDate.date;
 
 				html += '</div>';
 				html += '</li></ul>';
