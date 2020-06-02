@@ -1,7 +1,7 @@
 $(function () {
 	if(SAFEROUTE_WIDGET === false)
-		return console.error('SafeRoute: Не задан API-ключ.');
-	
+		return console.error('SafeRoute: Не задан токен SafeRoute или ID магазина.');
+
 	var lang = (function () {
 		switch (SAFEROUTE_WIDGET.LANG) {
 			case 'ru': return {
@@ -17,172 +17,180 @@ $(function () {
 				selectDelivery: 'Select delivery',
 				changeDelivery: 'Change delivery',
 				details: 'Details',
-				courier: 'Couriers delivery',
+				courier: 'Courier delivery',
 				pickup: 'Pickup',
 				post: 'Post of Russia',
 				deliveryNotSelected: 'Delivery not selected'
 			};
-			case 'zh': return {
-				selectDelivery: '',
-				changeDelivery: '',
-				details: '',
-				courier: '',
-				pickup: '',
-				post: '',
-				deliveryNotSelected: ''
-			};
 		}
 	})();
-	
-	
+
+
 	function sessionRequest (data) {
 		$.post(SAFEROUTE_WIDGET.SESSION_SCRIPT, data, function () {
 			// Обновление блоков на странице
 			BX.Sale.OrderAjaxComponent.sendRequest();
 		});
 	}
-	
-	
+
+
 	// Попап для виджета
 	$('body').append(
 		'<div id="sr-widget-wrap">' +
-			'<div id="sr-widget-close">x</div>' +
-			'<div id="sr-widget"></div>' +
+		'<div id="sr-widget-close">x</div>' +
+		'<div id="sr-widget"></div>' +
 		'</div>'
 	);
-	
-	
+
+
 	// Проверка, что открыта страница оформления заказа
 	if ($('#bx-soa-order').length) {
 		// Сброс текущей выбранной доставки SafeRoute
 		sessionRequest({ action: 'reset_delivery' });
 	}
-	
-	
+
+
 	// Текущий выбранный и подтвержденный способ доставки из виджета
 	var selectedDelivery;
-	
-	
+
+
 	// Проверяет, что был выбран способ доставки с помощью SafeRoute
 	function safeRouteIsSelected () {
 		return ($('input[name=DELIVERY_ID]:checked').val() === SAFEROUTE_DELIVERY_ID);
 	}
-	
+
 	// Рендерит информацию о выбранном способе доставки, а также кнопку открытия виджета для выбора
 	function displayDeliveryInfo (to) {
 		setTimeout(function () {
 			// Если выбрано не SafeRoute, удалить блок с информацией и кнопкой
 			if (!safeRouteIsSelected())
 				return $('#sr-delivery-info').remove();
-			
+
 			if (!$('#sr-delivery-info').length) {
 				$('#bx-soa-delivery .bx-soa-pp .bx-soa-pp-desc-container .bx-soa-pp-company')
 					.append('<div id="sr-delivery-info"></div>');
 			}
-			
+
 			var html = '';
-			
+
 			if (selectedDelivery) {
 				var type = Number(selectedDelivery.delivery.type);
-				
+
 				html += '<ul class="bx-soa-pp-list"><li>';
 				html += '<div class="bx-soa-pp-list-termin">' + lang.details + ':</div>';
 				html += '<div class="bx-soa-pp-list-description">';
-				
+
 				if (type === 1) html += lang.pickup + ' (' + selectedDelivery.delivery.point.address + ')';
 				else if (type === 2) html += lang.courier;
 				else if (type === 3) html += lang.post;
-				
-				if (type !== 3) {
-					html += ', ' + (selectedDelivery.delivery.point ? selectedDelivery.delivery.point.delivery_company_abbr : selectedDelivery.delivery.delivery_company_abbr);
-				}
-				
-				html += ', ' + (selectedDelivery.delivery.point ? selectedDelivery.delivery.point.delivery_date : selectedDelivery.delivery.delivery_date);
-				
+
+				if (type !== 3) html += ', ' + selectedDelivery.delivery.deliveryCompanyName;
+
+				html += ', ' + selectedDelivery.delivery.deliveryDate;
+
 				html += '</div>';
 				html += '</li></ul>';
 			} else {
 				html += '<p><b>' + lang.deliveryNotSelected + '</b></p>';
 			}
-			
-			html += '<div id="sr-select-delivery-btn" class="btn btn-default btn-md">' + (selectedDelivery ? lang.changeDelivery : lang.selectDelivery) + '</div>';
-			
+
+			html += '<div id="sr-select-delivery-btn" class="btn btn-primary btn-md">' + (selectedDelivery ? lang.changeDelivery : lang.selectDelivery) + '</div>';
+
 			$('#sr-delivery-info').html(html);
 		}, to || 0);
 	}
 	displayDeliveryInfo(200);
-	
-	
+
+
 	var widget = {
 		instance: null,
-		
+
 		open: function () {
 			this.close();
-			
+
 			var delivery;
-			
+
 			this.instance = new SafeRouteCartWidget('sr-widget', {
+				currency: SAFEROUTE_WIDGET.CURRENCY ? SAFEROUTE_WIDGET.CURRENCY.toLowerCase() : undefined,
+				regionName: $('input.bx-ui-sls-route').val(),
 				apiScript: SAFEROUTE_WIDGET.API_SCRIPT,
 				products: SAFEROUTE_WIDGET.PRODUCTS,
 				weight: SAFEROUTE_WIDGET.WEIGHT,
-				lang: SAFEROUTE_WIDGET.LANG,
-				mod: 'bitrix'
+				lang: SAFEROUTE_WIDGET.LANG
 			});
-			
-			this.instance.on('change', function (data) {
-				delivery = data;
-			});
-			
-			this.instance.on('error', function (err) { console.error(err); });
-			
-			this.instance.on('afterSubmit', function (response) {
-				if (response.status === 'ok') {
-					selectedDelivery = delivery;
-					// Отображение данных о выбранной доставке
-					displayDeliveryInfo();
-					
-					var c = selectedDelivery.contacts;
-					var address = (selectedDelivery.delivery.point)
-						? selectedDelivery.delivery.point.address
-						: (c.address.street + ', ' + c.address.house + ', ' + c.address.flat);
-					
-					// Сохранение данных о доставке в сессии
-					sessionRequest({
-						action: 'set_delivery',
-						
-						saferoute_price: selectedDelivery.delivery.point
-							? selectedDelivery.delivery.point.price_delivery
-							: selectedDelivery.delivery.total_price,
-						saferoute_order_id: response.id || 'no',
-						saferoute_order_in_cabinet: response.confirmed ? 1 : 0,
-						
-						saferoute_full_name: c.fullName,
-						saferoute_phone: c.phone,
-						saferoute_city: selectedDelivery.city.name,
-						saferoute_address: address,
-						saferoute_index: c.address.index
-					});
-					
-					// Обновление данных в полях формы оформления на странице
-					if (ORDER_PROPS_FOR_SAFEROUTE.FIO)
-						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.FIO).val(c.fullName);
-					if (ORDER_PROPS_FOR_SAFEROUTE.ADDRESS)
-						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.ADDRESS).val(address);
-					if (ORDER_PROPS_FOR_SAFEROUTE.CITY)
-						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.CITY).val(selectedDelivery.city.name);
-					if (ORDER_PROPS_FOR_SAFEROUTE.PHONE)
-						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.PHONE).val(c.phone);
-					if (ORDER_PROPS_FOR_SAFEROUTE.ZIP)
-						$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.ZIP).val(c.address.index);
-					
-					// Закрытие виджета
-					widget.close();
+
+			this.instance.on('change', function (data) { delivery = data; });
+			this.instance.on('error', function (errors) { alert(errors); });
+
+			this.instance.on('done', function (response) {
+				selectedDelivery = delivery;
+				// Отображение данных о выбранной доставке
+				displayDeliveryInfo();
+
+				var c = selectedDelivery.contacts;
+				var address;
+
+				if (selectedDelivery.delivery.point) {
+					address = selectedDelivery.delivery.point.address;
 				} else {
-					alert('SafeRoute Error');
-					console.error(response.message);
+					address = c.address.street + ', ' + c.address.building;
+					if (c.address.bulk) address += ' (' + c.address.bulk + ')';
+					if (c.address.apartment) address += ', ' + c.address.apartment;
 				}
+
+				// Сохранение данных о доставке в сессии
+				sessionRequest({
+					action: 'set_delivery',
+
+					saferoute_price: selectedDelivery.delivery.point
+						? selectedDelivery.delivery.point.totalPrice
+						: selectedDelivery.delivery.totalPrice,
+					saferoute_order_id: response.id || 'no',
+					saferoute_order_in_cabinet: response.confirmed ? 1 : 0,
+
+					saferoute_full_name: c.fullName,
+					saferoute_phone: c.phone,
+					saferoute_city: selectedDelivery.city.name,
+					saferoute_address: address,
+					saferoute_index: c.address.zipCode
+				});
+
+				// Обновление данных в полях формы оформления на странице
+				// Поля физ. лица
+				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.FIO)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.FIO).val(c.fullName);
+				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ADDRESS)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ADDRESS).val(address);
+				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.CITY)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.CITY).val(selectedDelivery.city.name);
+				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.PHONE)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.PHONE).val(c.phone);
+				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.EMAIL)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.EMAIL).val(c.email);
+				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ZIP)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ZIP).val(c.address.zipCode);
+				// Поля юр. лица
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ADDRESS)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ADDRESS).val(address);
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CITY)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CITY).val(selectedDelivery.city.name);
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.COMPANY)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.COMPANY).val(c.companyName);
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CONTACT_PERSON)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CONTACT_PERSON).val(c.fullName);
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.EMAIL)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.EMAIL).val(c.email);
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.PHONE)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.PHONE).val(c.phone);
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.INN)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.INN).val(c.companyTIN);
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ZIP)
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ZIP).val(c.address.zipCode);
+
+				// Закрытие виджета
+				widget.close();
 			});
-			
+
 			$('#sr-widget-wrap').addClass('visible');
 		},
 		close: function () {
@@ -191,14 +199,14 @@ $(function () {
 			this.instance = null;
 		}
 	};
-	
-	
+
+
 	// Завершение обновления блоков на странице оформления заказа
 	BX.addCustomEvent('onAjaxSuccess', function() {
 		displayDeliveryInfo();
 	});
-	
-	
+
+
 	// Костыль, необходимый, потому что событие change для чекбоксов не срабатывает в случае
 	// клика по самому блоку (с логотипом), в котором находится чекбокс
 	$(document).on('click', '.bx-soa-pp-company-graf-container', function (e) {
@@ -206,7 +214,7 @@ $(function () {
 			$(this).find('input[name=DELIVERY_ID]').trigger('change');
 		}
 	});
-	
+
 	// Отслеживание изменения выбранного способа доставки
 	$(document).on('change', 'input[name=DELIVERY_ID]', function () {
 		if (safeRouteIsSelected() && !selectedDelivery) {
@@ -214,30 +222,30 @@ $(function () {
 		} else {
 			widget.close();
 		}
-		
+
 		displayDeliveryInfo();
 	});
-	
+
 	// Закрытие кнопкой закрытия в углу
 	$('#sr-widget-wrap #sr-widget-close').on('click', function () {
 		widget.close();
 	});
-	
+
 	// Закрытие по ESC
 	$(window).on('keypress', function (e) {
 		if (e.keyCode === 27) widget.close();
 	});
-	
+
 	// Клик по кнопке выбора способа доставки
 	$('#bx-soa-delivery').on('click', '#sr-select-delivery-btn', function () {
 		widget.open();
 	});
-	
+
 	// Клик по любому месту блока оформления заказа
 	$(document).on('mouseup', '#bx-soa-order', function () {
 		displayDeliveryInfo(200);
 	});
-	
+
 	// Отправка формы оформления заказа
 	$('#bx-soa-order-form').on('submit', function (e) {
 		// Если доставкой выбрана SafeRoute, но в виджете способ доставки не выбран
@@ -246,7 +254,7 @@ $(function () {
 			BX.PreventDefault(e);
 			// Отображение виджета
 			widget.open();
-			
+
 			BX.Sale.OrderAjaxComponent.endLoader();
 			setTimeout(function(){
 				BX.Sale.OrderAjaxComponent.endLoader();

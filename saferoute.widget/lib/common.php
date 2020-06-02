@@ -10,11 +10,16 @@ use \Bitrix\Main\Loader;
  */
 class Common
 {
+    /**
+     * ID модуля
+     */
+    const MOD_ID = 'saferoute.widget';
+
 	/**
 	 * Возвращает значение переменной сессии
 	 * 
 	 * @param $name string Имя переменной
-	 * @param $convert2win1251 bool Флаг необходимости концертации значения в windows-1251
+	 * @param $convert2win1251 bool Флаг необходимости конвертации значения в windows-1251
 	 * @return mixed
 	 */
 	private static function session($name, $convert2win1251 = false)
@@ -31,24 +36,27 @@ class Common
 	}
 	
 	/**
-	 * Возвращает API-ключ SafeRoute из настроек модуля
+	 * Возвращает настройки модуля
 	 * 
-	 * @return string
+	 * @return array
 	 */
-	public static function getAPIKey()
+	public static function getSettings()
 	{
-		return \Bitrix\Main\Config\Option::get('saferoute.widget', 'api_key');
+	    return [
+	        'token' => Option::get(self::MOD_ID, 'token'),
+	        'shop_id' => Option::get(self::MOD_ID, 'shop_id'),
+        ];
 	}
 	
 	/**
-	 * Проверяет правильность API-ключа
+	 * Проверяет правильность токена
 	 * 
-	 * @param $api_key string API-ключ для проверки
+	 * @param $token string Токен для проверки
 	 * @return bool
 	 */
-	public static function checkAPIKey($api_key)
+	public static function checkToken($token)
 	{
-		return $api_key && $api_key === self::getAPIKey();
+		return $token && $token === self::getSettings()['token'];
 	}
 	
 	/**
@@ -129,13 +137,19 @@ class Common
 	 */
 	public static function updateOrderInSafeRoute(array $data)
 	{
-        $api = 'https://api.saferoute.ru/api/' . self::getAPIKey() . '/sdk/update-order.json';
-		
-        $curl = curl_init($api);
-		
+	    $settings = self::getSettings();
+
+        $curl = curl_init('https://api.saferoute.ru/v2/widgets/update-order');
+
+        curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [
+            'Content-Type:application/json',
+            'Authorization:Bearer '.$settings['token'],
+            'shop-id:'.$settings['shop_id'],
+        ]);
 		
         $response = json_decode(curl_exec($curl), true);
         curl_close($curl);
@@ -164,12 +178,12 @@ class Common
 			{
 				$win1251 = SITE_CHARSET === 'windows-1251';
 				
-				$prop_id_location = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_location'));
-				$prop_id_fio      = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_fio'));
-				$prop_id_phone    = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_phone'));
-				$prop_id_city     = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_city'));
-				$prop_id_address  = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_address'));
-				$prop_id_zip      = self::getOrderPropIDByCode(Option::get('saferoute.widget', 'ord_prop_code_zip'));
+				$prop_id_location = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_location'));
+				$prop_id_fio      = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_fio'));
+				$prop_id_phone    = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_phone'));
+				$prop_id_city     = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_city'));
+				$prop_id_address  = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_address'));
+				$prop_id_zip      = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_zip'));
 				
 				// Сохранение данных доставки в свойствах заказа
 				$pc = $entity->getPropertyCollection();
@@ -184,7 +198,7 @@ class Common
 				if ($pc->getItemByOrderPropertyId($prop_id_address))
 					$pc->getItemByOrderPropertyId($prop_id_address)->setValue(self::session('saferoute_address', $win1251));
 				if ($pc->getItemByOrderPropertyId($prop_id_zip))
-					$pc->getItemByOrderPropertyId($prop_id_zip)->setValue(self::session('saferoute_index', $win1251));
+					$pc->getItemByOrderPropertyId($prop_id_zip)->setValue(self::session('saferoute_zip_code', $win1251));
 				$entity->save();
 				
 				// Только если не была выбрана собственная компания доставки
@@ -197,20 +211,20 @@ class Common
 						'IN_SAFEROUTE_CABINET' => self::session('saferoute_order_in_cabinet'),
 					]);
 					
-					// Отправка запроса к SDK
+					// Отправка запроса к бэку SafeRoute
 					$response = self::updateOrderInSafeRoute([
-						'id'             => $saferoute_order_id,
-						'cms_id'         => $order_id,
-						'status'         => $entity->getField('STATUS_ID'),
-						'payment_method' => $entity->getField('PAY_SYSTEM_ID'),
+						'id'            => $saferoute_order_id,
+						'cmsId'         => $order_id,
+						'status'        => $entity->getField('STATUS_ID'),
+						'paymentMethod' => $entity->getField('PAY_SYSTEM_ID'),
 					]);
 					
 					// Если заказ был перенесен в ЛК
-					if($response['status'] === 'ok' && isset($response['data']['cabinet_id']))
+					if($response && $response['cabinetId'])
 					{
 						// Обновляем его SafeRoute ID и устанавливаем флаг, что заказ находится в ЛК
 						SafeRouteOrderTable::update($order_id, [
-							'SAFEROUTE_ID'         => $response['data']['cabinet_id'],
+							'SAFEROUTE_ID'         => $response['cabinetId'],
 							'IN_SAFEROUTE_CABINET' => true,
 						]);
 					}
@@ -230,19 +244,16 @@ class Common
 				$response = self::updateOrderInSafeRoute([
 					'id'     => $sr_order->get('SAFEROUTE_ID'),
 					'status' => $order['STATUS_ID'],
-					'cms_id' => $order_id,
+					'cmsId'  => $order_id,
 				]);
-				
-				if($response['status'] === 'ok')
+
+                // Если заказ был перенесен в ЛК
+				if($response && $response['cabinetId'])
 				{
-					// Если заказ был перенесен в ЛК
-					if(isset($response['data']['cabinet_id']))
-					{
-						// Устанавливаем соответствующий флаг и сохраняем новый SafeRoute ID
-						$sr_order->set('IN_SAFEROUTE_CABINET', true);
-						$sr_order->set('SAFEROUTE_ID', $response['data']['cabinet_id']);
-						$sr_order->save();
-					}
+                    // Устанавливаем соответствующий флаг и сохраняем новый SafeRoute ID
+                    $sr_order->set('IN_SAFEROUTE_CABINET', true);
+                    $sr_order->set('SAFEROUTE_ID', $response['cabinetId']);
+                    $sr_order->save();
 				}
 			}
 		}
@@ -266,7 +277,7 @@ class Common
 	 */
 	public static function onPageStart()
 	{
-		Loader::includeModule('saferoute.widget');
+		Loader::includeModule(self::MOD_ID);
 	}
 	
 	/**

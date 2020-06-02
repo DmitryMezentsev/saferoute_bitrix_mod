@@ -15,7 +15,7 @@ Loc::loadMessages(__FILE__);
 class saferoute_widget extends CModule
 {
 	var $MODULE_ID = 'saferoute.widget';
-	
+
 	const SALE_PAY_SYSTEM_ACTION_FILE = '/bitrix/php_interface/include/sale_payment/SafeRoute';
 	const DELIVERY_SRV_CLASS_NAME = '\Sale\Handlers\Delivery\SaferouteHandler';
 	
@@ -102,12 +102,23 @@ class saferoute_widget extends CModule
 		}
 		
 		// Установка начальных значений настроек модуля
+        // Физ. лицо
 		Option::set($this->MODULE_ID, 'ord_prop_code_fio', 'FIO');
 		Option::set($this->MODULE_ID, 'ord_prop_code_location', 'LOCATION');
-		Option::set($this->MODULE_ID, 'ord_prop_code_phone', 'PHONE');
-		Option::set($this->MODULE_ID, 'ord_prop_code_city', 'CITY');
+        Option::set($this->MODULE_ID, 'ord_prop_code_phone', 'PHONE');
+        Option::set($this->MODULE_ID, 'ord_prop_code_email', 'EMAIL');
+        Option::set($this->MODULE_ID, 'ord_prop_code_city', 'CITY');
 		Option::set($this->MODULE_ID, 'ord_prop_code_address', 'ADDRESS');
 		Option::set($this->MODULE_ID, 'ord_prop_code_zip', 'ZIP');
+		// Юр. лицо
+		Option::set($this->MODULE_ID, 'ord_prop_code_lp_company_name', 'COMPANY');
+		Option::set($this->MODULE_ID, 'ord_prop_code_lp_tin', 'INN');
+		Option::set($this->MODULE_ID, 'ord_prop_code_lp_contact_person', 'CONTACT_PERSON');
+		Option::set($this->MODULE_ID, 'ord_prop_code_lp_email', 'EMAIL');
+		Option::set($this->MODULE_ID, 'ord_prop_code_lp_phone', 'PHONE');
+		Option::set($this->MODULE_ID, 'ord_prop_code_lp_zip', 'ZIP');
+		Option::set($this->MODULE_ID, 'ord_prop_code_lp_city', 'CITY');
+		Option::set($this->MODULE_ID, 'ord_prop_code_lp_delivery_address', 'ADDRESS');
 	}
 	
 	/**

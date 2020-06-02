@@ -5,7 +5,7 @@
 	top: 0;
 	bottom: 0;
 	background: rgba(0, 0, 0, .35);
-	z-index: 5000;
+	z-index: 999999;
 }
 
 #sr-widget-wrap:not(.visible) {
@@ -22,7 +22,7 @@
 	line-height: 22px;
 	border-radius: 4px;
 	text-align: center;
-	font-family: Tahoma;
+	font-family: Tahoma, serif;
 	font-weight: bold;
 	font-size: 16px;
 	cursor: pointer;
@@ -56,12 +56,13 @@
 
 
 #sr-widget-wrap #sr-widget iframe {
-	max-width: auto !important;
+	max-width: 100% !important;
 	width: 100% !important;
 	height: 100% !important;
 }
 
 
 #sr-select-delivery-btn {
-	
+	cursor: pointer;
+	user-select: none;
 }

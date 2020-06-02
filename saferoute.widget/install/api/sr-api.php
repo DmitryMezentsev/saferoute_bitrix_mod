@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @param array $data
+ * @param bool $fix_charset
+ */
 function sendAsJSON(array $data, $fix_charset=false)
 {
 	header('Content-Type: application/json');
@@ -13,9 +17,7 @@ function sendAsJSON(array $data, $fix_charset=false)
 }
 
 
-
 require_once($_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_before.php');
-
 
 
 use Bitrix\Main\Application;
@@ -23,14 +25,12 @@ use Bitrix\Main\Type\DateTime;
 use Saferoute\Widget\Common;
 
 
-
 $request = Application::getInstance()->getContext()->getRequest();
 $route = $request->get('r');
 
 
-
-// ѕроверка API-ключа
-if(Common::checkAPIKey($request->get('k')))
+// ѕроверка токена
+if(Common::checkToken($request->getHeader('token')))
 {
 	// —писок статусов заказа
 	if($route === 'statuses.json')
@@ -43,22 +43,22 @@ if(Common::checkAPIKey($request->get('k')))
 		sendAsJSON(Common::getShopPaymentMethods(), SITE_CHARSET === 'windows-1251');
 	}
 	// ”ведомлени€ об изменени€х статуса заказа в SafeRoute
-	elseif($route === 'traffic-orders.json')
+	elseif($route === 'order-status-update')
 	{
 		$id = $request->getPost('id');
-		$status_cms = $request->getPost('status_cms');
-		$track_number = $request->getPost('track_number');
-		
-		// id и status_cms об€зательно должны быть переданы
+		$status_cms = $request->getPost('statusCMS');
+		$track_number = $request->getPost('trackNumber');
+
+		// id и statusCMS об€зательно должны быть переданы
 		if ($id && $status_cms)
 		{
 			$data = [
 				'STATUS_ID' => $status_cms,
 				'DATE_STATUS' => new DateTime(),
 			];
-			
+
 			if($track_number) $data['TRACKING_NUMBER'] = $track_number;
-			
+
 			// —охранение нового статуса заказа и трекинг-номера, если он был передан
 			Common::updateOrderBySafeRouteID($id, $data);
 		}

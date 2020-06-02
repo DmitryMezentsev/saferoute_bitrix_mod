@@ -1,3 +1,3 @@
 <?php
 
-$MESS['SAFEROUTE_WIDGET_API_KEY_PROMPT'] = 'Do not forget to set SafeRoute API-key in module settings.';
+$MESS['SAFEROUTE_WIDGET_SETTINGS_PROMPT'] = 'Do not forget to set SafeRoute account token and shop ID in module settings.';
