@@ -111,6 +111,7 @@ $(function () {
 			var delivery;
 
 			this.instance = new SafeRouteCartWidget('sr-widget', {
+				mod: 'bitrix',
 				currency: SAFEROUTE_WIDGET.CURRENCY ? SAFEROUTE_WIDGET.CURRENCY.toLowerCase() : undefined,
 				regionName: $('input.bx-ui-sls-route').val(),
 				apiScript: SAFEROUTE_WIDGET.API_SCRIPT,
