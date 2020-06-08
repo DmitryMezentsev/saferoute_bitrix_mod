@@ -1,5 +1,5 @@
 $(function () {
-	if(SAFEROUTE_WIDGET === false)
+	if (SAFEROUTE_WIDGET === false)
 		return console.error('SafeRoute: Не задан токен SafeRoute или ID магазина.');
 
 	var lang = (function () {
@@ -8,18 +8,12 @@ $(function () {
 				selectDelivery: 'Выбрать способ доставки',
 				changeDelivery: 'Изменить способ доставки',
 				details: 'Детали',
-				courier: 'Курьерская доставка',
-				pickup: 'Самовывоз',
-				post: 'Почта России',
 				deliveryNotSelected: 'Способ доставки не выбран'
 			};
 			case 'en': return {
 				selectDelivery: 'Select delivery',
 				changeDelivery: 'Change delivery',
 				details: 'Details',
-				courier: 'Courier delivery',
-				pickup: 'Pickup',
-				post: 'Post of Russia',
 				deliveryNotSelected: 'Delivery not selected'
 			};
 		}
@@ -74,20 +68,10 @@ $(function () {
 			var html = '';
 
 			if (selectedDelivery) {
-				var type = Number(selectedDelivery.delivery.type);
-
 				html += '<ul class="bx-soa-pp-list"><li>';
 				html += '<div class="bx-soa-pp-list-termin">' + lang.details + ':</div>';
 				html += '<div class="bx-soa-pp-list-description">';
-
-				if (type === 1) html += lang.pickup + ' (' + selectedDelivery.delivery.point.address + ')';
-				else if (type === 2) html += lang.courier;
-				else if (type === 3) html += lang.post;
-
-				if (type !== 3) html += ', ' + selectedDelivery.delivery.deliveryCompanyName;
-
-				html += ', ' + selectedDelivery.deliveryDate.date;
-
+				html += selectedDelivery._meta.commonDeliveryData;
 				html += '</div>';
 				html += '</li></ul>';
 			} else {
@@ -129,15 +113,6 @@ $(function () {
 				displayDeliveryInfo();
 
 				var c = selectedDelivery.contacts;
-				var address;
-
-				if (selectedDelivery.delivery.point) {
-					address = selectedDelivery.delivery.point.address;
-				} else {
-					address = c.address.street + ', ' + c.address.building;
-					if (c.address.bulk) address += ' (' + c.address.bulk + ')';
-					if (c.address.apartment) address += ', ' + c.address.apartment;
-				}
 
 				// Сохранение данных о доставке в сессии
 				sessionRequest({
@@ -150,7 +125,7 @@ $(function () {
 					saferoute_full_name: c.fullName,
 					saferoute_phone: c.phone,
 					saferoute_city: selectedDelivery.city.name,
-					saferoute_address: address,
+					saferoute_address: selectedDelivery._meta.fullDeliveryAddress,
 					saferoute_index: c.address.zipCode
 				});
 
@@ -159,7 +134,7 @@ $(function () {
 				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.FIO)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.FIO).val(c.fullName);
 				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ADDRESS)
-					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ADDRESS).val(address);
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ADDRESS).val(selectedDelivery._meta.fullDeliveryAddress);
 				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.CITY)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.CITY).val(selectedDelivery.city.name);
 				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.PHONE)
@@ -170,7 +145,7 @@ $(function () {
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ZIP).val(c.address.zipCode);
 				// Поля юр. лица
 				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ADDRESS)
-					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ADDRESS).val(address);
+					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ADDRESS).val(selectedDelivery._meta.fullDeliveryAddress);
 				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CITY)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CITY).val(selectedDelivery.city.name);
 				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.COMPANY)
