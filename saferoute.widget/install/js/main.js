@@ -118,7 +118,7 @@ $(function () {
 				sessionRequest({
 					action: 'set_delivery',
 
-					saferoute_price: selectedDelivery.delivery.totalPrice + (selectedDelivery.payTypeCommission ? selectedDelivery.payTypeCommission : 0),
+					saferoute_price: selectedDelivery.delivery.totalPrice + (selectedDelivery.payTypeCommission || 0),
 					saferoute_order_id: response.id || 'no',
 					saferoute_order_in_cabinet: response.confirmed ? 1 : 0,
 
