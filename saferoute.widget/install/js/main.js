@@ -139,26 +139,26 @@ $(function () {
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.CITY).val(selectedDelivery.city.name);
 				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.PHONE)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.PHONE).val(c.phone);
-				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.EMAIL)
+				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.EMAIL && c.email)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.EMAIL).val(c.email);
-				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ZIP)
+				if (ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ZIP && c.address.zipCode)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.ZIP).val(c.address.zipCode);
 				// Поля юр. лица
 				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ADDRESS)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ADDRESS).val(selectedDelivery._meta.fullDeliveryAddress);
 				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CITY)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CITY).val(selectedDelivery.city.name);
-				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.COMPANY)
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.COMPANY && c.companyName)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.COMPANY).val(c.companyName);
 				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CONTACT_PERSON)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.CONTACT_PERSON).val(c.fullName);
-				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.EMAIL)
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.EMAIL && c.email)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.EMAIL).val(c.email);
 				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.PHONE)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.PHONE).val(c.phone);
-				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.INN)
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.INN && c.companyTIN)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.INN).val(c.companyTIN);
-				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ZIP)
+				if (ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ZIP && c.address.zipCode)
 					$('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.LEGAL.ZIP).val(c.address.zipCode);
 
 				// Закрытие виджета
