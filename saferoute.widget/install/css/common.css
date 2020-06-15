@@ -1,3 +1,8 @@
+#bx-soa-delivery.sr-not-selected-in-widget .bx-soa-pp-price,
+#bx-soa-delivery.sr-not-selected-in-widget .bx-soa-pp-company .bx-soa-pp-list {
+	display: none;
+}
+
 #sr-widget-wrap {
 	position: fixed;
 	left: 0;

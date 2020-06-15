@@ -28,6 +28,16 @@ $(function () {
 	}
 
 
+	// Для скрытия стоимости доставки SafeRoute, когда доставка в виджете не выбрана
+	$('head').append(
+		'<style type="text/css" rel="stylesheet">' +
+		'.sr-not-selected:not(.sr-selected-in-widget) #ID_DELIVERY_ID_' + SAFEROUTE_DELIVERY_ID + ' + div + .bx-soa-pp-delivery-cost,' +
+		'.sr-not-selected-in-widget #ID_DELIVERY_ID_' + SAFEROUTE_DELIVERY_ID + ' + div + .bx-soa-pp-delivery-cost ' +
+		'{ display: none; }' +
+		'</style>'
+	);
+
+
 	// Попап для виджета
 	$('body').append(
 		'<div id="sr-widget-wrap">' +
@@ -53,34 +63,43 @@ $(function () {
 		return ($('input[name=DELIVERY_ID]:checked').val() === SAFEROUTE_DELIVERY_ID);
 	}
 
-	// Рендерит информацию о выбранном способе доставки, а также кнопку открытия виджета для выбора
+	// Отображает информацию о выбранном способе доставки, кнопку открытия виджета,
+	// а также скрывает стоимость доставки, если способ в виджете не выбран
 	function displayDeliveryInfo (to) {
 		setTimeout(function () {
-			// Если выбрано не SafeRoute, удалить блок с информацией и кнопкой
-			if (!safeRouteIsSelected())
-				return $('#sr-delivery-info').remove();
+			$('#bx-soa-delivery').removeClass('sr-not-selected sr-not-selected-in-widget sr-selected-in-widget');
 
-			if (!$('#sr-delivery-info').length) {
-				$('#bx-soa-delivery .bx-soa-pp .bx-soa-pp-desc-container .bx-soa-pp-company')
-					.append('<div id="sr-delivery-info"></div>');
-			}
-
-			var html = '';
-
-			if (selectedDelivery) {
-				html += '<ul class="bx-soa-pp-list"><li>';
-				html += '<div class="bx-soa-pp-list-termin">' + lang.details + ':</div>';
-				html += '<div class="bx-soa-pp-list-description">';
-				html += selectedDelivery._meta.commonDeliveryData;
-				html += '</div>';
-				html += '</li></ul>';
+			// Если выбрано не SafeRoute
+			if (!safeRouteIsSelected()) {
+				$('#sr-delivery-info').remove();
+				$('#bx-soa-delivery').addClass(selectedDelivery ? 'sr-selected-in-widget' : 'sr-not-selected');
 			} else {
-				html += '<p><b>' + lang.deliveryNotSelected + '</b></p>';
+				if (!$('#sr-delivery-info').length) {
+					$('#bx-soa-delivery .bx-soa-pp .bx-soa-pp-desc-container .bx-soa-pp-company')
+						.append('<div id="sr-delivery-info"></div>');
+				}
+
+				var html = '';
+
+				if (selectedDelivery) {
+					html += '<ul class="bx-soa-pp-list"><li>';
+					html += '<div class="bx-soa-pp-list-termin">' + lang.details + ':</div>';
+					html += '<div class="bx-soa-pp-list-description">';
+					html += selectedDelivery._meta.commonDeliveryData;
+					html += '</div>';
+					html += '</li></ul>';
+
+					$('#bx-soa-delivery').addClass('sr-selected-in-widget');
+				} else {
+					html += '<p><b>' + lang.deliveryNotSelected + '</b></p>';
+
+					$('#bx-soa-delivery').addClass('sr-not-selected-in-widget');
+				}
+
+				html += '<div id="sr-select-delivery-btn" class="btn btn-primary btn-md">' + (selectedDelivery ? lang.changeDelivery : lang.selectDelivery) + '</div>';
+
+				$('#sr-delivery-info').html(html);
 			}
-
-			html += '<div id="sr-select-delivery-btn" class="btn btn-primary btn-md">' + (selectedDelivery ? lang.changeDelivery : lang.selectDelivery) + '</div>';
-
-			$('#sr-delivery-info').html(html);
 		}, to || 0);
 	}
 	displayDeliveryInfo(200);
