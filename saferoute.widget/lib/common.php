@@ -176,31 +176,6 @@ class Common
             // “олько дл€ заказов, дл€ которых была выбрана доставка SafeRoute
             if($delivery_id === self::getSafeRouteDeliveryID() && $saferoute_order_id)
             {
-                $win1251 = SITE_CHARSET === 'windows-1251';
-
-                $prop_id_location = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_location'));
-                $prop_id_fio      = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_fio'));
-                $prop_id_phone    = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_phone'));
-                $prop_id_city     = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_city'));
-                $prop_id_address  = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_address'));
-                $prop_id_zip      = self::getOrderPropIDByCode(Option::get(self::MOD_ID, 'ord_prop_code_zip'));
-
-                // —охранение данных доставки в свойствах заказа
-                $pc = $entity->getPropertyCollection();
-                if ($pc->getItemByOrderPropertyId($prop_id_location))
-                    $pc->getItemByOrderPropertyId($prop_id_location)->setValue('');
-                if ($pc->getItemByOrderPropertyId($prop_id_fio))
-                    $pc->getItemByOrderPropertyId($prop_id_fio)->setValue(self::session('saferoute_full_name', $win1251));
-                if ($pc->getItemByOrderPropertyId($prop_id_phone))
-                    $pc->getItemByOrderPropertyId($prop_id_phone)->setValue(self::session('saferoute_phone', $win1251));
-                if ($pc->getItemByOrderPropertyId($prop_id_city))
-                    $pc->getItemByOrderPropertyId($prop_id_city)->setValue(self::session('saferoute_city', $win1251));
-                if ($pc->getItemByOrderPropertyId($prop_id_address))
-                    $pc->getItemByOrderPropertyId($prop_id_address)->setValue(self::session('saferoute_address', $win1251));
-                if ($pc->getItemByOrderPropertyId($prop_id_zip))
-                    $pc->getItemByOrderPropertyId($prop_id_zip)->setValue(self::session('saferoute_zip_code', $win1251));
-                $entity->save();
-
                 // “олько если не была выбрана собственна€ компани€ доставки
                 if ($saferoute_order_id !== 'no')
                 {
