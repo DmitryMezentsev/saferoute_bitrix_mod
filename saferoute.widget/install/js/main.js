@@ -114,13 +114,18 @@ $(function () {
 			var delivery;
 
 			this.instance = new SafeRouteCartWidget('sr-widget', {
-				mod: 'bitrix',
-				currency: SAFEROUTE_WIDGET.CURRENCY ? SAFEROUTE_WIDGET.CURRENCY.toLowerCase() : undefined,
-				regionName: $('input.bx-ui-sls-route').val(),
-				apiScript: SAFEROUTE_WIDGET.API_SCRIPT,
-				products: SAFEROUTE_WIDGET.PRODUCTS,
-				weight: SAFEROUTE_WIDGET.WEIGHT,
-				lang: SAFEROUTE_WIDGET.LANG
+        mod: 'bitrix',
+        lang: SAFEROUTE_WIDGET.LANG,
+        currency: SAFEROUTE_WIDGET.CURRENCY ? SAFEROUTE_WIDGET.CURRENCY.toLowerCase() : undefined,
+        apiScript: SAFEROUTE_WIDGET.API_SCRIPT,
+
+        products: SAFEROUTE_WIDGET.PRODUCTS,
+        weight: SAFEROUTE_WIDGET.WEIGHT,
+
+        regionName: $('input.bx-ui-sls-route').val(),
+        userFullName: $('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.FIO).val() || undefined,
+        userPhone: $('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.PHONE).val() || undefined,
+        userEmail: $('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.EMAIL).val() || undefined
 			});
 
 			this.instance.on('change', function (data) { delivery = data; });
