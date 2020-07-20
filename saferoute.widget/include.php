@@ -51,7 +51,12 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
             $product = CCatalogProduct::GetByIDEx($item['PRODUCT_ID']);
 
             // Артикул
-            $vendorCode = (isset($product['PROPERTIES']['ARTNUMBER']['VALUE'])) ? $product['PROPERTIES']['ARTNUMBER']['VALUE'] : '';
+            $vendorCode = (
+                Option::get($mod_id, 'prod_prop_code_vendor_code') &&
+                isset($product['PROPERTIES'][Option::get($mod_id, 'prod_prop_code_vendor_code')]['VALUE'])
+            )
+                ? $product['PROPERTIES']['ARTNUMBER']['VALUE']
+                : '';
 
             // Штрих-код
             $barcode = CCatalogStoreBarCode::getList([], ['PRODUCT_ID' => $item['PRODUCT_ID']])->GetNext();

@@ -119,6 +119,9 @@ class saferoute_widget extends CModule
 		Option::set($this->MODULE_ID, 'ord_prop_code_lp_zip', 'ZIP');
 		Option::set($this->MODULE_ID, 'ord_prop_code_lp_city', 'CITY');
 		Option::set($this->MODULE_ID, 'ord_prop_code_lp_delivery_address', 'ADDRESS');
+
+		// Артикул товара
+		Option::set($this->MODULE_ID, 'prod_prop_code_vendor_code', 'ARTNUMBER');
 	}
 	
 	/**

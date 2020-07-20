@@ -44,6 +44,9 @@ $aTabs = [
       ['ord_prop_code_lp_zip', Loc::getMessage('SAFEROUTE_WIDGET_ORD_PROP_CODE_ZIP'), '', ['text', 30]],
       ['ord_prop_code_lp_city', Loc::getMessage('SAFEROUTE_WIDGET_ORD_PROP_CODE_CITY'), '', ['text', 30]],
       ['ord_prop_code_lp_delivery_address', Loc::getMessage('SAFEROUTE_WIDGET_ORD_PROP_CODE_ADDRESS'), '', ['text', 30]],
+      // Настройка полей для товара
+      Loc::getMessage('SAFEROUTE_WIDGET_PROD_PROPS_CODES'),
+      ['prod_prop_code_vendor_code', Loc::getMessage('SAFEROUTE_WIDGET_PROD_PROP_CODE_VENDOR_CODE'), '', ['text', 30]],
 		],
 	],
 ];
