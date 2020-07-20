@@ -3,6 +3,9 @@
 use Bitrix\Main\Context;
 use Bitrix\Main\Config\Option;
 use Bitrix\Sale\BusinessValue;
+use Bitrix\Main\Localization\Loc;
+
+Loc::loadMessages(__FILE__);
 
 if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Context::getCurrent()->getRequest()->isAdminSection())
 {
@@ -165,4 +168,7 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
     $APPLICATION->SetAdditionalCSS(SITE_DIR . 'bitrix/css/saferoute.widget/common.css');
     $APPLICATION->AddHeadString('<script>' . $inlineJs . '</script>');
     $APPLICATION->AddHeadString('<script src="' . SITE_DIR . 'bitrix/js/saferoute.widget/main.js" charset="utf-8"></script>');
+
+    if (!function_exists('curl_version'))
+        $APPLICATION->AddHeadString('<script>alert("' . Loc::getMessage('SAFEROUTE_WIDGET_CURL_ERROR') . '");</script>');
 }
