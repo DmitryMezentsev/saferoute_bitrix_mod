@@ -173,8 +173,16 @@ class Common
             $delivery_id = (int) $entity->getField('DELIVERY_ID');
             $saferoute_order_id = self::session('saferoute_order_id');
 
+            $sr_delivery_ids = self::getSafeRouteDeliveryIDs();
+
             // Только для заказов, для которых была выбрана доставка SafeRoute
-            if($delivery_id === self::getSafeRouteDeliveryID() && $saferoute_order_id)
+            if(
+                (
+                    $delivery_id === $sr_delivery_ids['common'] ||
+                    $delivery_id === $sr_delivery_ids['courier'] ||
+                    $delivery_id === $sr_delivery_ids['pickup']
+                )
+                && $saferoute_order_id)
             {
                 // Только если не была выбрана собственная компания доставки
                 if ($saferoute_order_id !== 'no')
@@ -237,14 +245,29 @@ class Common
     /**
      * Возвращает ID доставки SafeRoute в базе Битрикса
      *
-     * @return int|null
+     * @return array
      */
-    public static function getSafeRouteDeliveryID()
+    public static function getSafeRouteDeliveryIDs()
     {
-        foreach(\Bitrix\Sale\Delivery\Services\Manager::getActiveList() as $d)
-            if($d['CODE'] === 'SafeRoute') return (int) $d['ID'];
+        $ids = [
+            'common' => null,
+            'courier' => null,
+            'pickup' => null,
+        ];
 
-        return null;
+        foreach(\Bitrix\Sale\Delivery\Services\Manager::getActiveList() as $d)
+        {
+            $id = (int) $d['ID'];
+
+            switch ($d['CODE'])
+            {
+                case 'SafeRoute': $ids['common'] = $id; break;
+                case 'SafeRouteCourier': $ids['courier'] = $id; break;
+                case 'SafeRoutePickup': $ids['pickup'] = $id; break;
+            }
+        }
+
+        return $ids;
     }
 
     /**

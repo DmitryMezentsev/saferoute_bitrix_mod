@@ -9,6 +9,7 @@ use \Bitrix\Main\Entity\Base;
 use \Bitrix\Main\Config\Option;
 use \Bitrix\Main\IO\Directory;
 use \Bitrix\Sale\Delivery\Services\Manager as DeliveryManager;
+use \Bitrix\Sale\Delivery\Services\Table as DeliveryTable;
 
 Loc::loadMessages(__FILE__);
 
@@ -18,7 +19,11 @@ class saferoute_widget extends CModule
 
 	const SALE_PAY_SYSTEM_ACTION_FILE = '/bitrix/php_interface/include/sale_payment/SafeRoute';
 	const DELIVERY_SRV_CLASS_NAME = '\Sale\Handlers\Delivery\SaferouteHandler';
-	
+
+	const SAFEROUTE_DELIVERY_CODE = 'SafeRoute';
+	const SAFEROUTE_COURIER_DELIVERY_CODE = 'SafeRouteCourier';
+	const SAFEROUTE_PICKUP_DELIVERY_CODE = 'SafeRoutePickup';
+
 	
 	// ID загруженного в Битрикс файла с логотипом SafeRoute
 	private $saferoute_logo_id;
@@ -43,6 +48,25 @@ class saferoute_widget extends CModule
 	{
 		return dirname(__DIR__);
 	}
+
+    /**
+     * Проверяет, существует ли способ доставки с переданным кодом
+     *
+     * @param $code string
+     * @return bool
+     */
+    private function checkDeliveryExists($code)
+    {
+        $exists = false;
+
+        $result = DeliveryTable::getList();
+        while($delivery = $result->fetch())
+        {
+            if ($delivery['CODE'] === $code) $exists = true;
+        }
+
+        return $exists;
+    }
 	
 	
 	/***************************
@@ -79,16 +103,41 @@ class saferoute_widget extends CModule
 		
 		if(Loader::includeModule('sale'))
 		{
-			// Добавление способа доставки SafeRoute
-			DeliveryManager::add([
-				'NAME'        => 'SafeRoute',
-				'ACTIVE'      => 'Y',
-				'DESCRIPTION' => Loc::getMessage('SAFEROUTE_WIDGET_DELIVERY_SERV_DESC'),
-				'CURRENCY'    => 'RUB',
-				'LOGOTIP'     => $this->saferoute_logo_id,
-				'CLASS_NAME'  => '\Bitrix\Sale\Delivery\Services\Configurable',
-			]);
-			
+			// Добавление способов доставки SafeRoute
+            if (!$this->checkDeliveryExists(self::SAFEROUTE_DELIVERY_CODE))
+            {
+                DeliveryManager::add([
+                    'NAME' => Loc::getMessage('SAFEROUTE_WIDGET_DELIVERY_SERV_TITLE'),
+                    'ACTIVE' => 'Y',
+                    'DESCRIPTION' => Loc::getMessage('SAFEROUTE_WIDGET_DELIVERY_SERV_DESC'),
+                    'CURRENCY' => 'RUB',
+                    'LOGOTIP' => $this->saferoute_logo_id,
+                    'CLASS_NAME' => '\Bitrix\Sale\Delivery\Services\Configurable',
+                ]);
+            }
+            if (!$this->checkDeliveryExists(self::SAFEROUTE_COURIER_DELIVERY_CODE))
+            {
+                DeliveryManager::add([
+                    'NAME' => Loc::getMessage('SAFEROUTE_WIDGET_COURIER_DELIVERY_SERV_TITLE'),
+                    'ACTIVE' => 'Y',
+                    'DESCRIPTION' => Loc::getMessage('SAFEROUTE_WIDGET_COURIER_DELIVERY_SERV_DESC'),
+                    'CURRENCY' => 'RUB',
+                    'LOGOTIP' => $this->saferoute_logo_id,
+                    'CLASS_NAME' => '\Bitrix\Sale\Delivery\Services\Configurable',
+                ]);
+            }
+            if (!$this->checkDeliveryExists(self::SAFEROUTE_PICKUP_DELIVERY_CODE))
+            {
+                DeliveryManager::add([
+                    'NAME' => Loc::getMessage('SAFEROUTE_WIDGET_PICKUP_DELIVERY_SERV_TITLE'),
+                    'ACTIVE' => 'Y',
+                    'DESCRIPTION' => Loc::getMessage('SAFEROUTE_WIDGET_PICKUP_DELIVERY_SERV_DESC'),
+                    'CURRENCY' => 'RUB',
+                    'LOGOTIP' => $this->saferoute_logo_id,
+                    'CLASS_NAME' => '\Bitrix\Sale\Delivery\Services\Configurable',
+                ]);
+            }
+
 			// Добавление способа оплаты
 			/* Отключено, пока виджет не поддерживает эквайринг
 			CSalePaySystemAction::Add([
@@ -195,13 +244,19 @@ class saferoute_widget extends CModule
 		
 		if(Loader::includeModule('sale'))
 		{
-			// Удаление способа доставки SafeRoute
-			$delivery_services = DeliveryManager::getActiveList();
+			// Удаление способов доставки SafeRoute
+			$delivery_services = DeliveryTable::getList();
 			foreach($delivery_services as $delivery_service)
 			{
 				if($delivery_service['CLASS_NAME'] === self::DELIVERY_SRV_CLASS_NAME)
 					DeliveryManager::delete($delivery_service['ID']);
 			}
+			// Деактивация того, что не было удалено
+            foreach(DeliveryManager::getActiveList() as $delivery_service)
+            {
+                if($delivery_service['CLASS_NAME'] === self::DELIVERY_SRV_CLASS_NAME)
+                    DeliveryManager::update($delivery_service['ID'], ['ACTIVE' => 'N']);
+            }
 			
 			// Удаление способа оплаты
 			/* Отключено, пока виджет не поддерживает эквайринг
@@ -257,16 +312,36 @@ class saferoute_widget extends CModule
 		
 		if(Loader::includeModule('sale'))
 		{
-			// Установка для способа доставки CODE и CLASS_NAME
+			// Установка для способов доставки CODE и CLASS_NAME
 			// (да, костыль, но в InstallDB() оно нихера не работает)
 			foreach(DeliveryManager::getActiveList() as $d)
 			{
-				if(($d['ID'] === $d['CODE'] || !$d['CODE']) && $d['NAME'] === 'SafeRoute')
+				if($d['ID'] === $d['CODE'] || !$d['CODE'])
 				{
-					DeliveryManager::update($d['ID'], [
-						'CODE' => 'SafeRoute',
-						'CLASS_NAME' => self::DELIVERY_SRV_CLASS_NAME,
-					]);
+				    if ($d['NAME'] === Loc::getMessage('SAFEROUTE_WIDGET_COURIER_DELIVERY_SERV_TITLE'))
+                    {
+                        DeliveryManager::update($d['ID'], [
+                            'CODE' => self::SAFEROUTE_COURIER_DELIVERY_CODE,
+                            'CLASS_NAME' => self::DELIVERY_SRV_CLASS_NAME,
+                            'ACTIVE' => 'N',
+                        ]);
+                    }
+				    elseif ($d['NAME'] === Loc::getMessage('SAFEROUTE_WIDGET_PICKUP_DELIVERY_SERV_TITLE'))
+                    {
+                        DeliveryManager::update($d['ID'], [
+                            'CODE' => self::SAFEROUTE_PICKUP_DELIVERY_CODE,
+                            'CLASS_NAME' => self::DELIVERY_SRV_CLASS_NAME,
+                            'ACTIVE' => 'N',
+                        ]);
+                    }
+                    elseif ($d['NAME'] === Loc::getMessage('SAFEROUTE_WIDGET_DELIVERY_SERV_TITLE'))
+                    {
+                        DeliveryManager::update($d['ID'], [
+                            'CODE' => self::SAFEROUTE_DELIVERY_CODE,
+                            'CLASS_NAME' => self::DELIVERY_SRV_CLASS_NAME,
+                            'ACTIVE' => 'Y',
+                        ]);
+                    }
 				}
 			}
 		}

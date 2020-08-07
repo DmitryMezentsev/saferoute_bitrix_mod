@@ -31,8 +31,9 @@ $(function () {
 	// Для скрытия стоимости доставки SafeRoute, когда доставка в виджете не выбрана
 	$('head').append(
 		'<style type="text/css" rel="stylesheet">' +
-		'.sr-not-selected:not(.sr-selected-in-widget) #ID_DELIVERY_ID_' + SAFEROUTE_DELIVERY_ID + ' + div + .bx-soa-pp-delivery-cost,' +
-		'.sr-not-selected-in-widget #ID_DELIVERY_ID_' + SAFEROUTE_DELIVERY_ID + ' + div + .bx-soa-pp-delivery-cost ' +
+		'#ID_DELIVERY_ID_' + SAFEROUTE_DELIVERY_ID + ' ~ .bx-soa-pp-delivery-cost.zero-price,' +
+		'#ID_DELIVERY_ID_' + SAFEROUTE_COURIER_DELIVERY_ID + ' ~ .bx-soa-pp-delivery-cost.zero-price,' +
+		'#ID_DELIVERY_ID_' + SAFEROUTE_PICKUP_DELIVERY_ID + ' ~ .bx-soa-pp-delivery-cost.zero-price ' +
 		'{ display: none; }' +
 		'</style>'
 	);
@@ -60,19 +61,38 @@ $(function () {
 
 	// Проверяет, что был выбран способ доставки с помощью SafeRoute
 	function safeRouteIsSelected () {
-		return ($('input[name=DELIVERY_ID]:checked').val() === SAFEROUTE_DELIVERY_ID);
+		var val = $('input[name=DELIVERY_ID]:checked').val();
+
+		return (
+			(SAFEROUTE_DELIVERY_ID && val === SAFEROUTE_DELIVERY_ID) ||
+			(SAFEROUTE_COURIER_DELIVERY_ID && val === SAFEROUTE_COURIER_DELIVERY_ID) ||
+			(SAFEROUTE_PICKUP_DELIVERY_ID && val === SAFEROUTE_PICKUP_DELIVERY_ID)
+		);
+	}
+
+	// Определяет, какого типа была была выбрана доставка SafeRoute
+	function getSelectedDeliveryType() {
+		switch ($('input[name=DELIVERY_ID]:checked').val()) {
+			case SAFEROUTE_PICKUP_DELIVERY_ID: return 1;
+			case SAFEROUTE_COURIER_DELIVERY_ID: return 2;
+		}
 	}
 
 	// Отображает информацию о выбранном способе доставки, кнопку открытия виджета,
 	// а также скрывает стоимость доставки, если способ в виджете не выбран
 	function displayDeliveryInfo (to) {
-		setTimeout(function () {
-			$('#bx-soa-delivery').removeClass('sr-not-selected sr-not-selected-in-widget sr-selected-in-widget');
+		// Помечаем нулевые цены
+		$('.bx-soa-pp-delivery-cost').each(function () {
+			if (parseFloat($(this).text()) === 0)
+				$(this).addClass('zero-price');
+			else
+				$(this).removeClass('zero-price');
+		});
 
+		setTimeout(function () {
 			// Если выбрано не SafeRoute
 			if (!safeRouteIsSelected()) {
 				$('#sr-delivery-info').remove();
-				$('#bx-soa-delivery').addClass(selectedDelivery ? 'sr-selected-in-widget' : 'sr-not-selected');
 			} else {
 				if (!$('#sr-delivery-info').length) {
 					$('#bx-soa-delivery .bx-soa-pp .bx-soa-pp-desc-container .bx-soa-pp-company')
@@ -88,12 +108,8 @@ $(function () {
 					html += selectedDelivery._meta.commonDeliveryData;
 					html += '</div>';
 					html += '</li></ul>';
-
-					$('#bx-soa-delivery').addClass('sr-selected-in-widget');
 				} else {
 					html += '<p><b>' + lang.deliveryNotSelected + '</b></p>';
-
-					$('#bx-soa-delivery').addClass('sr-not-selected-in-widget');
 				}
 
 				html += '<div id="sr-select-delivery-btn" class="btn btn-primary btn-md">' + (selectedDelivery ? lang.changeDelivery : lang.selectDelivery) + '</div>';
@@ -118,6 +134,8 @@ $(function () {
         lang: SAFEROUTE_WIDGET.LANG,
         currency: SAFEROUTE_WIDGET.CURRENCY ? SAFEROUTE_WIDGET.CURRENCY.toLowerCase() : undefined,
         apiScript: SAFEROUTE_WIDGET.API_SCRIPT,
+				disableMultiRequests: SAFEROUTE_WIDGET.DISABLE_MULTI_REQUESTS,
+				deliveryType: getSelectedDeliveryType(),
 
         products: SAFEROUTE_WIDGET.PRODUCTS,
         weight: SAFEROUTE_WIDGET.WEIGHT,
@@ -219,6 +237,16 @@ $(function () {
 			widget.open();
 		} else {
 			widget.close();
+		}
+
+		// Сброс выбранной в виджете доставки, если идёт разделение доставки SR по способам
+		if (
+			(SAFEROUTE_COURIER_DELIVERY_ID && SAFEROUTE_PICKUP_DELIVERY_ID) ||
+			(SAFEROUTE_DELIVERY_ID && SAFEROUTE_PICKUP_DELIVERY_ID) ||
+			(SAFEROUTE_COURIER_DELIVERY_ID && SAFEROUTE_DELIVERY_ID)
+		) {
+			sessionRequest({ action: 'reset_delivery' });
+			selectedDelivery = undefined;
 		}
 
 		displayDeliveryInfo();

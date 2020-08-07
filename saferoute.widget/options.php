@@ -25,6 +25,7 @@ $aTabs = [
 			Loc::getMessage('SAFEROUTE_WIDGET_SETTINGS_COMMON'),
 			['token', Loc::getMessage('SAFEROUTE_WIDGET_TOKEN'), '', ['text', 40]],
 			['shop_id', Loc::getMessage('SAFEROUTE_WIDGET_SHOP_ID'), '', ['text', 20]],
+      ['disable_multi_requests', Loc::getMessage('SAFEROUTE_WIDGET_DISABLE_MULTI_REQUESTS'), '', ['checkbox']],
       // Настройка полей для физ. лица
 			Loc::getMessage('SAFEROUTE_WIDGET_ORD_PROPS_CODES_IND'),
 			['ord_prop_code_fio', Loc::getMessage('SAFEROUTE_WIDGET_ORD_PROP_CODE_FIO'), '', ['text', 30]],

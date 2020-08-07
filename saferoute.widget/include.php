@@ -95,12 +95,16 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
         $inlineJs .= "SAFEROUTE_WIDGET.API_SCRIPT = '" . SITE_DIR . "bitrix/components/saferoute.widget/api/widget-api.php';";
         $inlineJs .= "SAFEROUTE_WIDGET.SESSION_SCRIPT = '" . SITE_DIR . "bitrix/components/saferoute.widget/api/save-session.php';";
         $inlineJs .= "SAFEROUTE_WIDGET.WEIGHT = " . round($calculated_order['ORDER_WEIGHT']/1000, 2) . ";";
+        $inlineJs .= "SAFEROUTE_WIDGET.DISABLE_MULTI_REQUESTS = " . (Option::get($mod_id, 'disable_multi_requests') ? 'true' : 'false') . ";";
 
 
         // Валюта корзины (определяется по первому товару в корзине)
         if (isset($cart->arResult[0]['CURRENCY'])) $inlineJs .= "SAFEROUTE_WIDGET.CURRENCY = '" . $cart->arResult[0]['CURRENCY'] . "';";
         // ID доставки SafeRoute в БД
-        $inlineJs .= 'var SAFEROUTE_DELIVERY_ID = "' . Saferoute\Widget\Common::getSafeRouteDeliveryID() . '";';
+        $sr_delivery_ids = Saferoute\Widget\Common::getSafeRouteDeliveryIDs();
+        $inlineJs .= 'var SAFEROUTE_DELIVERY_ID = "' . $sr_delivery_ids['common'] . '";';
+        $inlineJs .= 'var SAFEROUTE_COURIER_DELIVERY_ID = "' . $sr_delivery_ids['courier'] . '";';
+        $inlineJs .= 'var SAFEROUTE_PICKUP_DELIVERY_ID = "' . $sr_delivery_ids['pickup'] . '";';
 
 
         // Формирование массива ID типов плательщиков
