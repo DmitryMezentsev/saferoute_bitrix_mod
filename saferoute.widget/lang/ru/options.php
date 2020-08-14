@@ -4,6 +4,7 @@ $MESS['SAFEROUTE_WIDGET_TAB_SETTINGS']           = 'Настройки';
 $MESS['SAFEROUTE_WIDGET_TOKEN']                  = 'Токен';
 $MESS['SAFEROUTE_WIDGET_SHOP_ID']                = 'ID магазина';
 $MESS['SAFEROUTE_WIDGET_DISABLE_MULTI_REQUESTS'] = 'Отключить параллельную загрузку способов доставки<br>(используйте, если виджет слишком медленно загружает доставки)';
+$MESS['SAFEROUTE_WIDGET_LOCK_PICKUP_FILTERS']    = 'По возможности держать панель фильтров ПВЗ открытой';
 
 $MESS['SAFEROUTE_WIDGET_SETTINGS_COMMON']                = 'Общие';
 $MESS['SAFEROUTE_WIDGET_ORD_PROPS_CODES_IND']            = 'Коды свойств заказа (физ. лицо)';

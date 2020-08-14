@@ -4,6 +4,7 @@ $MESS['SAFEROUTE_WIDGET_TAB_SETTINGS']           = 'Settings';
 $MESS['SAFEROUTE_WIDGET_TOKEN']                  = 'Token';
 $MESS['SAFEROUTE_WIDGET_SHOP_ID']                = 'Shop ID';
 $MESS['SAFEROUTE_WIDGET_DISABLE_MULTI_REQUESTS'] = 'Disable parallel loading of delivery methods<br>(use if the widget loads delivery too slowly)';
+$MESS['SAFEROUTE_WIDGET_LOCK_PICKUP_FILTERS']    = 'If possible, keep the filter panel of the pickup point open';
 
 $MESS['SAFEROUTE_WIDGET_SETTINGS_COMMON']                = 'Common';
 $MESS['SAFEROUTE_WIDGET_ORD_PROPS_CODES_IND']            = 'Order props codes (individual)';

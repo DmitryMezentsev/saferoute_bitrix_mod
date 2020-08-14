@@ -96,6 +96,7 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
         $inlineJs .= "SAFEROUTE_WIDGET.SESSION_SCRIPT = '" . SITE_DIR . "bitrix/components/saferoute.widget/api/save-session.php';";
         $inlineJs .= "SAFEROUTE_WIDGET.WEIGHT = " . round($calculated_order['ORDER_WEIGHT']/1000, 2) . ";";
         $inlineJs .= "SAFEROUTE_WIDGET.DISABLE_MULTI_REQUESTS = " . (Option::get($mod_id, 'disable_multi_requests') ? 'true' : 'false') . ";";
+        $inlineJs .= "SAFEROUTE_WIDGET.LOCK_PICKUP_FILTERS = " . (Option::get($mod_id, 'lock_pickup_filters') ? 'true' : 'false') . ";";
 
 
         // Валюта корзины (определяется по первому товару в корзине)

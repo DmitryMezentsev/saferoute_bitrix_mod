@@ -146,6 +146,7 @@ $(function () {
         currency: SAFEROUTE_WIDGET.CURRENCY ? SAFEROUTE_WIDGET.CURRENCY.toLowerCase() : undefined,
         apiScript: SAFEROUTE_WIDGET.API_SCRIPT,
         disableMultiRequests: SAFEROUTE_WIDGET.DISABLE_MULTI_REQUESTS,
+        lockPickupFilters: SAFEROUTE_WIDGET.LOCK_PICKUP_FILTERS,
         deliveryType: getSelectedDeliveryType(),
 
         products: SAFEROUTE_WIDGET.PRODUCTS,
