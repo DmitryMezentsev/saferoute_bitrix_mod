@@ -105,6 +105,13 @@ $(function () {
       if (!safeRouteIsSelected()) {
         $('#sr-delivery-info').remove();
       } else {
+        var price = $('.bx-soa-pp-company .bx-soa-pp-list');
+
+        if (parseFloat($('.bx-soa-pp-company .bx-soa-pp-list .bx-soa-pp-list-description').text()) === 0)
+          price.hide();
+        else
+          price.show();
+
         if (!$('#sr-delivery-info').length) {
           $('#bx-soa-delivery .bx-soa-pp .bx-soa-pp-desc-container .bx-soa-pp-company')
             .append('<div id="sr-delivery-info"></div>');
