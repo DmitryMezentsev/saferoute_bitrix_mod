@@ -21,8 +21,13 @@ switch($_POST['action'])
 		$_SESSION['saferoute_company_name'] = $_POST['saferoute_company_name'];
 		$_SESSION['saferoute_company_tin']  = $_POST['saferoute_company_tin'];
 		break;
-	
-	// —брос выбранной доставки
+
+    // ќбновление стоимости доставки
+    case 'update_delivery_price':
+        $_SESSION['saferoute_price'] = $_POST['price'];
+        break;
+
+    // —брос выбранной доставки
 	case 'reset_delivery':
         $_SESSION['saferoute_order_id']         = null;
         $_SESSION['saferoute_order_in_cabinet'] = null;

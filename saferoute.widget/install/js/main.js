@@ -74,11 +74,14 @@ $(function () {
     );
   }
 
+  // Возвращает ID выбранного способа оплаты
+  function getSelectedPaySystemID () {
+    return Number($('input[name=PAY_SYSTEM_ID]:checked').val());
+  }
+
   // Вернёт true, если выбрана оплата при получении, недопустимая при выбранном способе доставки
   function selectedIsImpossibleCODPaymentMethod () {
-    var selectedPaySystemID = Number($('input[name=PAY_SYSTEM_ID]:checked').val());
-
-    return selectedDelivery.delivery.nppDisabled && SAFEROUTE_COD_PAYMENT_METHODS.indexOf(selectedPaySystemID) !== -1
+    return selectedDelivery.delivery.nppDisabled && SAFEROUTE_COD_PAYMENT_METHODS.indexOf(getSelectedPaySystemID()) !== -1
   }
 
   // Определяет, какого типа была была выбрана доставка SafeRoute
@@ -87,6 +90,16 @@ $(function () {
       case SAFEROUTE_PICKUP_DELIVERY_ID: return 1;
       case SAFEROUTE_COURIER_DELIVERY_ID: return 2;
     }
+  }
+
+  // Возвращает итоговую стоимость доставки в зависимости от текущего выбранного способа оплаты
+  function getDeliveryTotalPrice() {
+    var price = selectedDelivery.delivery.totalPrice;
+
+    if (SAFEROUTE_COD_PAYMENT_METHODS.indexOf(getSelectedPaySystemID()) !== -1)
+      price += selectedDelivery.delivery.priceCommissionCod;
+
+    return price;
   }
 
   // Отображает информацию о выбранном способе доставки, кнопку открытия виджета,
@@ -165,7 +178,15 @@ $(function () {
         userEmail: $('#soa-property-' + ORDER_PROPS_FOR_SAFEROUTE.INDIVIDUAL.EMAIL).val() || undefined
       });
 
-      this.instance.on('change', function (data) { delivery = data; });
+      this.instance.on('change', function (data) {
+        delivery = data;
+
+        if (data._meta.widgetSettings.payMethodWithCOD) {
+          var payMethodWithCOD = Number(data._meta.widgetSettings.payMethodWithCOD);
+          if (SAFEROUTE_COD_PAYMENT_METHODS.indexOf(payMethodWithCOD) === -1)
+            SAFEROUTE_COD_PAYMENT_METHODS.push(payMethodWithCOD);
+        }
+      });
       this.instance.on('error', function (errors) { alert(errors); });
 
       this.instance.on('done', function (response) {
@@ -179,7 +200,7 @@ $(function () {
         sessionRequest({
           action: 'set_delivery',
 
-          saferoute_price: selectedDelivery.delivery.totalPrice + (selectedDelivery.payTypeCommission || 0),
+          saferoute_price: getDeliveryTotalPrice(),
           saferoute_order_id: response.id || 'no',
           saferoute_order_in_cabinet: response.confirmed ? 1 : 0,
 
@@ -246,11 +267,11 @@ $(function () {
   // клика по самому блоку (с логотипом), в котором находится чекбокс
   $(document).on('click', '.bx-soa-pp-company-graf-container', function (e) {
     if (!$(e.target).is(':checkbox')) {
-      $(this).find('input[name=DELIVERY_ID]').trigger('change');
+      $(this).find('input[name=DELIVERY_ID], input[name=PAY_SYSTEM_ID]').trigger('change');
     }
   });
 
-  // Отслеживание изменения выбранного способа доставки
+  // Изменение выбранного способа доставки
   $(document).on('change', 'input[name=DELIVERY_ID]', function () {
     if (safeRouteIsSelected() && !selectedDelivery) {
       widget.open();
@@ -269,6 +290,11 @@ $(function () {
     }
 
     displayDeliveryInfo();
+  });
+
+  // Изменение выбранного способа оплаты
+  $(document).on('change', 'input[name=PAY_SYSTEM_ID]', function () {
+    if (safeRouteIsSelected()) sessionRequest({ action: 'update_delivery_price', price: getDeliveryTotalPrice() });
   });
 
   // Закрытие кнопкой закрытия в углу
