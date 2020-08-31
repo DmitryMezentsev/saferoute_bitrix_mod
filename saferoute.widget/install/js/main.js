@@ -96,6 +96,9 @@ $(function () {
   function getDeliveryTotalPrice() {
     var price = selectedDelivery.delivery.totalPrice;
 
+    if (selectedDelivery.payTypeCommission)
+      price += selectedDelivery.payTypeCommission;
+
     if (SAFEROUTE_COD_PAYMENT_METHODS.indexOf(getSelectedPaySystemID()) !== -1)
       price += selectedDelivery.delivery.priceCommissionCod || 0;
 
