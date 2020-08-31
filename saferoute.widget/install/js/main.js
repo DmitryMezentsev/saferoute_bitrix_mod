@@ -97,7 +97,7 @@ $(function () {
     var price = selectedDelivery.delivery.totalPrice;
 
     if (SAFEROUTE_COD_PAYMENT_METHODS.indexOf(getSelectedPaySystemID()) !== -1)
-      price += selectedDelivery.delivery.priceCommissionCod;
+      price += selectedDelivery.delivery.priceCommissionCod || 0;
 
     return price;
   }
