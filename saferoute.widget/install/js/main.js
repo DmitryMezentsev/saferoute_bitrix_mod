@@ -121,12 +121,27 @@ $(function () {
       if (!safeRouteIsSelected()) {
         $('#sr-delivery-info').remove();
       } else {
-        var price = $('.bx-soa-pp-company .bx-soa-pp-list');
+        var $price = $('.bx-soa-pp-company .bx-soa-pp-list');
+        var $freePriceRight = (function () {
+          var $row = null;
 
-        if (parseFloat($('.bx-soa-pp-company .bx-soa-pp-list .bx-soa-pp-list-description').text()) === 0)
-          price.hide();
-        else
-          price.show();
+          $('#bx-soa-total .bx-soa-price-free').closest('.bx-soa-cart-total-line').each(function () {
+            if (/(доставка)|(deliver)|(ship)/i.test($(this).find('.bx-soa-cart-t').text()))
+              $row = $(this);
+          });
+
+          return $row;
+        })();
+
+        if (parseFloat($('.bx-soa-pp-company .bx-soa-pp-list .bx-soa-pp-list-description').text()) === 0) {
+          $price.hide();
+
+          if ($freePriceRight) $freePriceRight.hide();
+        } else {
+          $price.show();
+
+          if ($freePriceRight) $freePriceRight.show();
+        }
 
         if (!$('#sr-delivery-info').length) {
           $('#bx-soa-delivery .bx-soa-pp .bx-soa-pp-desc-container .bx-soa-pp-company')
