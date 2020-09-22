@@ -55,7 +55,7 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
                 Option::get($mod_id, 'prod_prop_code_vendor_code') &&
                 isset($product['PROPERTIES'][Option::get($mod_id, 'prod_prop_code_vendor_code')]['VALUE'])
             )
-                ? $product['PROPERTIES']['ARTNUMBER']['VALUE']
+                ? addslashes($product['PROPERTIES']['ARTNUMBER']['VALUE'])
                 : '';
 
             // Штрих-код
@@ -73,7 +73,7 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
             $l = $dimensions['LENGTH'] ? $dimensions['LENGTH']/10 : 'null';
 
             $inlineJs .= '{';
-            $inlineJs .= "name: '$item[NAME]',";
+            $inlineJs .= "name: '" . addslashes($item['NAME']) . "',";
             $inlineJs .= "vendorCode: '$vendorCode',";
             $inlineJs .= "barcode: '$barcode',";
             $inlineJs .= "vat: $vat,";
