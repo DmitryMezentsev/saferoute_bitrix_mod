@@ -184,6 +184,18 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
     $inlineJs .= "var SAFEROUTE_COD_PAYMENT_METHODS = [$methods];";
 
 
+    // Определение ID способа оплаты через эквайринг SafeRoute
+    $sr_pay_method_id = 'null';
+    foreach(CSalePaySystemAction::GetList()->arResult as $payment_method)
+    {
+        if (preg_match("/saferoute/i", $payment_method['ACTION_FILE'])) $sr_pay_method_id = $payment_method['ID'];
+    }
+    $inlineJs .= "var SAFEROUTE_PAY_METHOD_ID = $sr_pay_method_id;";
+
+
+    $inlineJs .= 'var SAFEROUTE_DEV_MODE = ' . (SR_DEV_MODE ? 'true' : 'false') . ';';
+
+
     global $APPLICATION;
 
     CJSCore::Init(['jquery2']);

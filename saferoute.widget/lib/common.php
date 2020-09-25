@@ -5,6 +5,8 @@ namespace Saferoute\Widget;
 use \Bitrix\Main\Config\Option;
 use \Bitrix\Main\Loader;
 
+define('SR_DEV_MODE', false);
+
 /**
  * Основной класс модуля со всеми функциями
  */
@@ -130,16 +132,17 @@ class Common
     }
 
     /**
-     * Обновляет данные заказа на сервере SafeRoute
+     * Отправляет запрос к API SafeRoute
      *
-     * @param $data array Параметры запроса
+     * @param $api string Путь API
+     * @param $data array Данные
      * @return mixed
      */
-    public static function updateOrderInSafeRoute(array $data)
+    public static function sendAPIRequest($api, array $data = [])
     {
         $settings = self::getSettings();
 
-        $curl = curl_init('https://api.saferoute.ru/v2/widgets/update-order');
+        $curl = curl_init("https://" . (SR_DEV_MODE ? 'backup' : 'api') . ".saferoute.ru/v2/$api");
 
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -158,12 +161,33 @@ class Common
     }
 
     /**
+     * Проверяет, является ли способ оплаты способом оплаты через эквайринг виджета
+     *
+     * @param $id string ID способа оплаты
+     * @return bool
+     */
+    public static function isSRPaymentMethod($id)
+    {
+        $result = false;
+
+        foreach(\CSalePaySystemAction::GetList([], ['=ACTIVE' => 'Y'])->arResult as $payment_method)
+        {
+            if (preg_match("/saferoute/i", $payment_method['ACTION_FILE']) && $payment_method['ID'] === $id)
+                $result = true;
+        }
+
+        return $result;
+    }
+
+    /**
      * Обработчик события обновления данных / создания нового заказа
      *
      * @param $event \Bitrix\Main\Event
      */
     public static function onSaleOrderSaved(\Bitrix\Main\Event $event)
     {
+        global $DB;
+
         $entity = $event->getParameter('ENTITY');
         $order_id = $entity->getId();
 
@@ -195,7 +219,7 @@ class Common
                     ]);
 
                     // Отправка запроса к бэку SafeRoute
-                    $response = self::updateOrderInSafeRoute([
+                    $response = self::sendAPIRequest('widgets/update-order', [
                         'id'            => $saferoute_order_id,
                         'cmsId'         => $order_id,
                         'status'        => $entity->getField('STATUS_ID'),
@@ -212,6 +236,29 @@ class Common
                         ]);
                     }
                 }
+
+                // Если используется эквайринг виджета
+                if(self::isSRPaymentMethod($entity->getField('PAY_SYSTEM_ID')))
+                {
+                    // Подтверждение завершения оформления заказа в CMS
+                    $response = self::sendAPIRequest('widgets/confirm-order', ['checkoutSessId' => $_COOKIE['SR_checkoutSessId']]);
+
+                    // Если кода ошибки нет
+                    if(empty($response['code']))
+                    {
+                        $DB->Update('b_sale_order', [
+                            'PAYED'      => "'Y'",
+                            'DATE_PAYED' => "'" . date('Y-m-d H:i:s') . "'",
+                            'SUM_PAID'   => $entity->getField('PRICE'),
+                        ], "WHERE ID=$order_id");
+
+                        $DB->Update('b_sale_order_payment', [
+                            'PAID'             => "'Y'",
+                            'DATE_PAID'        => "'" . date('Y-m-d H:i:s') . "'",
+                            'PAY_VOUCHER_DATE' => "'" . date('Y-m-d') . "'",
+                        ], "WHERE ORDER_ID=$order_id");
+                    }
+                }
             }
         }
         // Изменение старого заказа
@@ -224,7 +271,7 @@ class Common
             // Только заказы, имеющие SafeRoute ID и ещё не перенесенные в ЛК
             if($sr_order && $sr_order->get('SAFEROUTE_ID') && !$sr_order->get('IN_SAFEROUTE_CABINET'))
             {
-                $response = self::updateOrderInSafeRoute([
+                $response = self::sendAPIRequest('widgets/update-order', [
                     'id'     => $sr_order->get('SAFEROUTE_ID'),
                     'status' => $order['STATUS_ID'],
                     'cmsId'  => $order_id,

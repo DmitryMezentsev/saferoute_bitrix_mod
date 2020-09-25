@@ -94,6 +94,8 @@ $(function () {
 
   // Возвращает итоговую стоимость доставки в зависимости от текущего выбранного способа оплаты
   function getDeliveryTotalPrice() {
+    if (!selectedDelivery) return 0;
+
     var price = selectedDelivery.delivery.totalPrice;
 
     if (selectedDelivery.payTypeCommission)
@@ -103,6 +105,29 @@ $(function () {
       price += selectedDelivery.delivery.priceCommissionCod || 0;
 
     return price;
+  }
+
+  // Возвращает ID соответствующего способа оплаты для выбранного способа оплаты в виджете
+  function getPaymentMethodForAcquiring() {
+    if (!selectedDelivery) return null;
+
+    switch(selectedDelivery.payType) {
+      case 1: return selectedDelivery._meta.widgetSettings.payMethodWithCOD; // Оплата при получении
+      case 2: return SAFEROUTE_PAY_METHOD_ID; // Эквайринг
+    }
+  }
+
+  // Выбирает указанный способ оплаты
+  function setPaymentMethod(id) {
+    if (id) {
+      $('#bx-soa-paysystem .bx-soa-section-title-container').trigger('click'); // Если это говно не развернуть, переключение не сработает
+      $('input#ID_PAY_SYSTEM_ID_' + id).closest('.bx-soa-pp-company').trigger('click');
+    }
+  }
+
+  // Скрывает все способы оплаты, кроме переданного
+  function hideOtherPaymentMethods(id) {
+    if (id) $('input#ID_PAY_SYSTEM_ID_' + id).closest('.bx-soa-pp-company').siblings('.bx-soa-pp-company').hide();
   }
 
   // Отображает информацию о выбранном способе доставки, кнопку открытия виджета,
@@ -179,6 +204,7 @@ $(function () {
       var delivery;
 
       this.instance = new SafeRouteCartWidget('sr-widget', {
+        devMode: SAFEROUTE_DEV_MODE,
         mod: 'bitrix',
         lang: SAFEROUTE_WIDGET.LANG,
         currency: SAFEROUTE_WIDGET.CURRENCY ? SAFEROUTE_WIDGET.CURRENCY.toLowerCase() : undefined,
@@ -263,6 +289,8 @@ $(function () {
 
         // Закрытие виджета
         widget.close();
+        // Если используется эквайринг через виджет, выбрать нужный способ оплаты
+        setPaymentMethod(getPaymentMethodForAcquiring());
       });
 
       $('#sr-widget-wrap').addClass('visible');
@@ -278,6 +306,8 @@ $(function () {
   // Завершение обновления блоков на странице оформления заказа
   BX.addCustomEvent('onAjaxSuccess', function() {
     displayDeliveryInfo();
+    // Если используется эквайринг через виджет, скрыть лишние способы оплаты
+    hideOtherPaymentMethods(getPaymentMethodForAcquiring());
   });
 
 
