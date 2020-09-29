@@ -81,7 +81,12 @@ $(function () {
 
   // Вернёт true, если выбрана оплата при получении, недопустимая при выбранном способе доставки
   function selectedIsImpossibleCODPaymentMethod () {
-    return selectedDelivery.delivery.nppDisabled && SAFEROUTE_COD_PAYMENT_METHODS.indexOf(getSelectedPaySystemID()) !== -1
+    if (!selectedDelivery || !selectedDelivery.delivery.nppDisabled) return false;
+
+    var settings = selectedDelivery._meta.widgetSettings;
+
+    return (settings.payMethodWithCOD && getSelectedPaySystemID() === settings.payMethodWithCOD) ||
+      (settings.cardPayMethodWithCOD && getSelectedPaySystemID() === settings.cardPayMethodWithCOD);
   }
 
   // Определяет, какого типа была была выбрана доставка SafeRoute
@@ -101,8 +106,13 @@ $(function () {
     if (selectedDelivery.payTypeCommission)
       price += selectedDelivery.payTypeCommission;
 
-    if (SAFEROUTE_COD_PAYMENT_METHODS.indexOf(getSelectedPaySystemID()) !== -1)
+    var payMethodWithCOD = Number(selectedDelivery._meta.widgetSettings.payMethodWithCOD);
+    var cardPayMethodWithCOD = Number(selectedDelivery._meta.widgetSettings.cardPayMethodWithCOD);
+
+    if (payMethodWithCOD && getSelectedPaySystemID() === payMethodWithCOD)
       price += selectedDelivery.delivery.priceCommissionCod || 0;
+    else if (cardPayMethodWithCOD && getSelectedPaySystemID() === cardPayMethodWithCOD)
+      price += selectedDelivery.delivery.priceCommissionCodCard || 0;
 
     return price;
   }
@@ -224,12 +234,6 @@ $(function () {
 
       this.instance.on('change', function (data) {
         delivery = data;
-
-        if (data._meta.widgetSettings.payMethodWithCOD) {
-          var payMethodWithCOD = Number(data._meta.widgetSettings.payMethodWithCOD);
-          if (SAFEROUTE_COD_PAYMENT_METHODS.indexOf(payMethodWithCOD) === -1)
-            SAFEROUTE_COD_PAYMENT_METHODS.push(payMethodWithCOD);
-        }
       });
       this.instance.on('error', function (errors) { alert(errors); });
 

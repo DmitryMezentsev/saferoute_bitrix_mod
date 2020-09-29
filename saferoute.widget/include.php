@@ -171,19 +171,6 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
     }
 
 
-    // Формирование массива ID способов оплаты с наложенным платежом
-    $methods = \CSalePaySystemAction::GetList([], ['=ACTIVE' => 'Y'], false, false, ['ID', 'ACTION_FILE']);
-    $methods = array_filter($methods->arResult, function ($method)
-    {
-        return in_array($method['ACTION_FILE'], [
-            '/bitrix/modules/sale/payment/cash',
-            '/bitrix/modules/sale/payment/payment_forward_calc',
-        ]);
-    });
-    $methods = implode(array_column($methods, 'ID'), ',');
-    $inlineJs .= "var SAFEROUTE_COD_PAYMENT_METHODS = [$methods];";
-
-
     // Определение ID способа оплаты через эквайринг SafeRoute
     $sr_pay_method_id = 'null';
     foreach(CSalePaySystemAction::GetList()->arResult as $payment_method)
