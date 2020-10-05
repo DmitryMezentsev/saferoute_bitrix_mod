@@ -60,6 +60,16 @@
 }
 
 
+@supports (-webkit-overflow-scrolling: touch) {
+	#sr-widget-wrap #sr-widget {
+		max-height: 100%;
+		max-width: 100%;
+		overflow: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+
 #sr-widget-wrap #sr-widget iframe {
 	max-width: 100% !important;
 	width: 100% !important;
