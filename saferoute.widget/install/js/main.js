@@ -400,4 +400,36 @@ $(function () {
       }
     }
   });
+
+  // Отправка формы оформления заказа (для новых версий битрикса)
+  BX.Event.EventEmitter.subscribe('BX.Sale.OrderAjaxComponent:onBeforeSendRequest', function (e) {
+    var data = e.getData();
+
+    if (data.action === 'saveOrderAjax' && safeRouteIsSelected()) {
+      // Если в виджете способ доставки не выбран
+      if (!selectedDelivery) {
+        data.cancel = true;
+        setTimeout(function() { BX.Sale.OrderAjaxComponent.endLoader() }, 100);
+
+        // Отображение виджета
+        return widget.open();
+      }
+
+      // Если выбрана оплата при получении, недопустимая при выбранном способе доставки
+      if (selectedIsImpossibleCODPaymentMethod()) {
+        data.cancel = true;
+        setTimeout(function() { BX.Sale.OrderAjaxComponent.endLoader() }, 100);
+
+        new BX.CDialog({
+          title: lang.canNotCreateAnOrder,
+          content: lang.selectOtherDeliveryOrPayMethod,
+          height: '150',
+          width: '360',
+          resizable: false,
+          draggable: false,
+          buttons: [BX.CDialog.btnClose]
+        }).Show();
+      }
+    }
+  });
 });
