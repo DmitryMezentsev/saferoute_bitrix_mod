@@ -49,6 +49,10 @@ $aTabs = [
             // Настройка полей для товара
             Loc::getMessage('SAFEROUTE_WIDGET_PROD_PROPS_CODES'),
             ['prod_prop_code_vendor_code', Loc::getMessage('SAFEROUTE_WIDGET_PROD_PROP_CODE_VENDOR_CODE'), '', ['text', 30]],
+            ['prod_prop_code_tnved', Loc::getMessage('SAFEROUTE_WIDGET_PROD_PROP_CODE_TNVED'), '', ['text', 30]],
+            ['prod_prop_code_name_en', Loc::getMessage('SAFEROUTE_WIDGET_PROD_PROP_CODE_NAME_EN'), '', ['text', 30]],
+            ['prod_prop_code_brand', Loc::getMessage('SAFEROUTE_WIDGET_PROD_PROP_CODE_BRAND'), '', ['text', 30]],
+            ['prod_prop_code_producing_country', Loc::getMessage('SAFEROUTE_WIDGET_PROD_PROP_CODE_PRODUCING_COUNTRY'), '', ['text', 30]],
         ],
     ],
 ];

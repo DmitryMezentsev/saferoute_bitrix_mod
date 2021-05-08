@@ -7,10 +7,19 @@ use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
 
+$mod_id = 'saferoute.widget';
+
+$srGetProductPropValue = function ($product, $prop_name) use ($mod_id)
+{
+    $option = Option::get($mod_id, $prop_name);
+
+    return ($option && isset($product['PROPERTIES'][$option]['VALUE']))
+        ? addslashes($product['PROPERTIES'][$option]['VALUE'])
+        : '';
+};
+
 if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Context::getCurrent()->getRequest()->isAdminSection())
 {
-    $mod_id = 'saferoute.widget';
-
     if(!Option::get($mod_id, 'token') || !Option::get($mod_id, 'shop_id'))
     {
         $inlineJs = 'var SAFEROUTE_WIDGET = false;';
@@ -50,13 +59,11 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
         {
             $product = CCatalogProduct::GetByIDEx($item['PRODUCT_ID']);
 
-            // Артикул
-            $vendorCode = (
-                Option::get($mod_id, 'prod_prop_code_vendor_code') &&
-                isset($product['PROPERTIES'][Option::get($mod_id, 'prod_prop_code_vendor_code')]['VALUE'])
-            )
-                ? addslashes($product['PROPERTIES']['ARTNUMBER']['VALUE'])
-                : '';
+            $vendorCode = $srGetProductPropValue($product, 'prod_prop_code_vendor_code');
+            $tnved  = $srGetProductPropValue($product, 'prod_prop_code_tnved');
+            $nameEn = $srGetProductPropValue($product, 'prod_prop_code_name_en');
+            $brand  = $srGetProductPropValue($product, 'prod_prop_code_brand');
+            $producingCountry = $srGetProductPropValue($product, 'prod_prop_code_producing_country');
 
             // Штрих-код
             $barcode = CCatalogStoreBarCode::getList([], ['PRODUCT_ID' => $item['PRODUCT_ID']])->GetNext();
@@ -75,6 +82,10 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
             $inlineJs .= '{';
             $inlineJs .= "name: '" . addslashes($item['NAME']) . "',";
             $inlineJs .= "vendorCode: '$vendorCode',";
+            $inlineJs .= "tnved: '$tnved',";
+            $inlineJs .= "nameEn: '$nameEn',";
+            $inlineJs .= "producingCountry: '$producingCountry',";
+            $inlineJs .= "brand: '$brand',";
             $inlineJs .= "barcode: '$barcode',";
             $inlineJs .= "vat: $vat,";
             $inlineJs .= "price: " . round($item['PRICE'], 2) . ",";

@@ -81,12 +81,18 @@ $(function () {
 
   // Вернёт true, если выбрана оплата при получении, недопустимая при выбранном способе доставки
   function selectedIsImpossibleCODPaymentMethod () {
-    if (!selectedDelivery || !selectedDelivery.delivery.nppDisabled) return false;
+    if (!selectedDelivery) return false;
 
+    var selectedPaymentMethod = getSelectedPaySystemID();
     var settings = selectedDelivery._meta.widgetSettings;
 
-    return (settings.payMethodWithCOD && getSelectedPaySystemID() === settings.payMethodWithCOD) ||
-      (settings.cardPayMethodWithCOD && getSelectedPaySystemID() === settings.cardPayMethodWithCOD);
+    if (!selectedPaymentMethod) return false;
+
+    return (
+      selectedPaymentMethod === Number(settings.payMethodWithCOD) ||
+      selectedPaymentMethod === Number(settings.cardPayMethodWithCOD)
+    ) &&
+      (selectedDelivery.delivery.nppDisabled || selectedDelivery.city.countryIsoCode !== 'RU');
   }
 
   // Определяет, какого типа была была выбрана доставка SafeRoute
