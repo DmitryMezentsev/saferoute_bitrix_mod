@@ -91,8 +91,7 @@ $(function () {
     return (
       selectedPaymentMethod === Number(settings.payMethodWithCOD) ||
       selectedPaymentMethod === Number(settings.cardPayMethodWithCOD)
-    ) &&
-      (selectedDelivery.delivery.nppDisabled || selectedDelivery.city.countryIsoCode !== 'RU');
+    ) && selectedDelivery.delivery.nppDisabled;
   }
 
   // Определяет, какого типа была была выбрана доставка SafeRoute
