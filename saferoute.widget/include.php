@@ -197,7 +197,7 @@ if(CModule::IncludeModule('sale') && CModule::IncludeModule('catalog') && !Conte
     global $APPLICATION;
 
     CJSCore::Init(['jquery2']);
-    $APPLICATION->AddHeadString('<script src="https://widgets.saferoute.ru/cart/api.js?new" charset="utf-8"></script>');
+    $APPLICATION->AddHeadString('<script src="https://widgets.saferoute.ru/cart/api.js" charset="utf-8"></script>');
     $APPLICATION->SetAdditionalCSS(SITE_DIR . 'bitrix/css/saferoute.widget/common.css');
     $APPLICATION->AddHeadString('<script>' . $inlineJs . '</script>');
     $APPLICATION->AddHeadString('<script src="' . SITE_DIR . 'bitrix/js/saferoute.widget/main.js" charset="utf-8"></script>');
